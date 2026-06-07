@@ -1,0 +1,59 @@
+# ==========================================
+# GENERAL Y SISTEMA OPERATIVO
+# ==========================================
+.DS_Store
+*.log
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+
+# ==========================================
+# BACKEND: C# / .NET (Visual Studio)
+# ==========================================
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# Carpetas de compilación .NET
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+
+# Archivos de publicación
+[Pp]ublish/
+*.Publish.xml
+*.pubxml
+*.pubxml.user
+
+# Opcional: Ignorar configuraciones locales de base de datos
+appsettings.Development.json
+
+# ==========================================
+# FRONTEND: VITE JS / NODE
+# ==========================================
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Carpetas de compilación de producción
+dist/
+dist-ssr/
+
+# Logs de gestores de paquetes
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Variables de entorno locales
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
