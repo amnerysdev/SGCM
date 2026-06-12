@@ -1,4 +1,7 @@
 
+using SGCM.Data.Context;
+using SGCM.Data;
+
 namespace SGCM
 {
     public class Program
@@ -12,6 +15,9 @@ namespace SGCM
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            builder.Services.AddIdentityService(builder.Configuration);
+            builder.Services.AddDataLayerIoc(builder.Configuration);
 
             var app = builder.Build();
 
