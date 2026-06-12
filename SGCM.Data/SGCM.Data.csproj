@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Context\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Enums\" />
     <Folder Include="Repositories\" />
