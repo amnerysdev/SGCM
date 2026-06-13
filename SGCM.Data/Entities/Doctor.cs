@@ -17,7 +17,7 @@ namespace SGCM.Data.Entities
         public AppUser AppUser { get; set; } = null!;
 
         // Specialty Relationship
-        public int SpecialtyId { get; set; }
+        public string SpecialtyId { get; set; } = string.Empty;
         public Specialty Specialty { get; set; } = null!;
 
         // Operational Relationships

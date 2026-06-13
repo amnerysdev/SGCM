@@ -11,7 +11,7 @@ namespace SGCM.Data.Entities
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
-        public int DoctorId { get; set; }
+        public string DoctorId { get; set; } = string.Empty;
         public Doctor Doctor { get; set; } = null!;
 
         public AvailableDay Day { get; set; }
