@@ -29,6 +29,7 @@ namespace SGCM
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
