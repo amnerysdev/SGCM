@@ -34,7 +34,9 @@ namespace SGCM.Data
                     optionsLifetime: ServiceLifetime.Scoped
                 );
             }
-        } 
+
+            // Registrar otros serviços relacionados ao banco de dados, como repositórios, unidades de trabajo, etc.
+        }
 
     }
 }
