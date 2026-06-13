@@ -15,7 +15,7 @@ namespace SGCM.Data
     {
         public static void AddDataLayerIoc(this IServiceCollection service, IConfiguration configuration)
         {
-            if (configuration.GetValue<bool>("UseInMemoryDatabase"))
+            if (configuration.GetValue<bool>("DatabaseConfig:UseInMemoryDatabase"))
             {
                 service.AddDbContext<SgcmDbContext>(options
                     => options.UseInMemoryDatabase("SGCM"));
