@@ -31,7 +31,8 @@ namespace SGCM.Data.Context
 
             services.AddAuthentication(options =>
             {
-
+                options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
             {
