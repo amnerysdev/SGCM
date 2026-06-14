@@ -9,7 +9,7 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 .idea/
-
+.env
 # ==========================================
 # BACKEND: C# / .NET (Visual Studio)
 # ==========================================
