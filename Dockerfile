@@ -3,9 +3,6 @@
 # ============================ #
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
-<<<<<<< HEAD
-EXPOSE 8080
-=======
 COPY ["SGCM/SGCM.Web.csproj", "SGCM/"]
 COPY ["SGCM.Data/SGCM.Data.csproj", "SGCM.Data/"]
 COPY ["SGCM.Test/SGCM.Test.csproj", "SGCM.Test/"]
@@ -25,4 +22,3 @@ COPY --from=build /app/publish .
 
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "SGCM.Web.dll"]
->>>>>>> feature/Braily
