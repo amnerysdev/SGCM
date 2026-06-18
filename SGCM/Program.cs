@@ -25,7 +25,9 @@ namespace SGCM
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.ApplyMigrations();
             }
+
 
             app.UseHttpsRedirection();
 
