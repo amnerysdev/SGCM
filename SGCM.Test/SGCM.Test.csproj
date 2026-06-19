@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SGCM.Data\SGCM.Data.csproj" />
-    <ProjectReference Include="..\SGCM\SGCM.csproj" />
+    <ProjectReference Include="..\SGCM\SGCM.Web.csproj" />
   </ItemGroup>
 
 </Project>

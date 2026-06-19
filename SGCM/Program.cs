@@ -1,4 +1,7 @@
 
+using SGCM.Data.Context;
+using SGCM.Data;
+
 namespace SGCM
 {
     public class Program
@@ -13,16 +16,22 @@ namespace SGCM
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
+            builder.Services.AddIdentityService(builder.Configuration);
+            builder.Services.AddDataLayerIoc(builder.Configuration);
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.ApplyMigrations();
             }
+
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
