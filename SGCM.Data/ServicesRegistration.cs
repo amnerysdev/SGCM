@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SGCM.Data.Context;
+using SGCM.Data.Interfaces;
+using SGCM.Data.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -36,6 +38,8 @@ namespace SGCM.Data
             }
 
             // Registrar otros serviços relacionados ao banco de dados, como repositórios, unidades de trabajo, etc.
+            service.AddScoped<IDoctorRepository, DoctorRepository>();
+            service.AddScoped<IPatientRepository, PatientRepository>();
         }
 
     }

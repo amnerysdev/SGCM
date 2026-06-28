@@ -1,10 +1,12 @@
-﻿namespace SGCM.Data.Interfaces
+﻿using SGCM.Data.Core;
+
+namespace SGCM.Data.Interfaces
 {
     public interface IGenericRepository<T> where T : class
     {
-        Task<T?> GetByIdAsync(string id);
-        Task<IEnumerable<T>> GetAllAsync();
-        Task AddAsync(T entity);
-        Task<int> SaveChangesAsync();
+        Task<OperationResult> GetByIdAsync(string id);
+        Task<OperationResult> GetAllAsync();
+        Task<OperationResult> AddAsync(T entity);
+        Task<OperationResult> SaveChangesAsync();
     }
 }
