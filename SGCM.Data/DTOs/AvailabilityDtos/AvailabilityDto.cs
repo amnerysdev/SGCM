@@ -1,0 +1,13 @@
+using SGCM.Data.Enums;
+
+namespace SGCM.Data.DTOs.AvailabilityDtos
+{
+    public class AvailabilityDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string DoctorId { get; set; } = string.Empty;
+        public AvailableDay Day { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
+    }
+}
