@@ -20,4 +20,8 @@
     <ProjectReference Include="..\SGCM.Data\SGCM.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="PRUEBA\" />
+  </ItemGroup>
+
 </Project>
