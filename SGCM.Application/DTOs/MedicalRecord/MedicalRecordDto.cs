@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGCM.Application.DTOs
+namespace SGCM.Application.DTOs.MedicalRecord
 {
     public class MedicalRecordDto
     {
@@ -13,9 +13,9 @@ namespace SGCM.Application.DTOs
         public string Treatment { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
         public DateTime CreationDate { get; set; } = DateTime.UtcNow;
-        public string PatientId { get; set; }
-        public string DoctorId { get; set; }
-        public string AppointmentId { get; set; }
+        public string PatientId { get; set; } = string.Empty;
+        public string DoctorId { get; set; } = string.Empty;
+        public string AppointmentId { get; set; } = string.Empty;
 
     }
 }

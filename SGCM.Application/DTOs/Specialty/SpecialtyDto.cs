@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGCM.Application.DTOs
+namespace SGCM.Application.DTOs.Specialty
 {
     public class SpecialtyDto
     {
