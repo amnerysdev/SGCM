@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SGCM.Data.Context;
+using SGCM.Data.Interfaces;
+using SGCM.Data.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -35,7 +37,14 @@ namespace SGCM.Data
                 );
             }
 
-            // Registrar otros serviços relacionados ao banco de dados, como repositórios, unidades de trabajo, etc.
+            // Registro de repositorios
+            service.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+            service.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            service.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+            service.AddScoped<IDoctorRepository, DoctorRepository>();
+            service.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
+            service.AddScoped<IPatientRepository, PatientRepository>();
+            service.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
         }
 
     }

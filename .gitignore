@@ -58,3 +58,6 @@ pnpm-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Respaldos temporales de proyectos .NET
+*.Backup.tmp
