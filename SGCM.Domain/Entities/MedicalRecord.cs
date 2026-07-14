@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SGCM.Data.Entities
+namespace SGCM.Domain.Entities
 {
     public class MedicalRecord
     {

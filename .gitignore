@@ -14,6 +14,7 @@
 # BACKEND: C# / .NET (Visual Studio)
 # ==========================================
 .vs/
+TemplateEngineHost/
 *.user
 *.userosscache
 *.sln.docstates

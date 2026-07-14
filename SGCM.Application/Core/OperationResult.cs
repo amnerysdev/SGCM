@@ -1,4 +1,4 @@
-﻿namespace SGCM.Data.Core
+﻿namespace SGCM.Application.Core
 {
     public class OperationResult
     {

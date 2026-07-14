@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SGCM.Data.Enums;
+using SGCM.Domain.Enums;
 
-namespace SGCM.Data.Entities
+namespace SGCM.Domain.Entities
 {
     public class Doctor
     {

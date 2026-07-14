@@ -1,4 +1,4 @@
-namespace SGCM.Data.Enums
+namespace SGCM.Domain.Enums
 {
     public enum AvailableDay
     {

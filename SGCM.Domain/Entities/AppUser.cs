@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
-namespace SGCM.Data.Entities
+namespace SGCM.Domain.Entities
 {
     public class AppUser : IdentityUser
     {
