@@ -2,12 +2,19 @@ const BASE_URL = '/api/account'
 const SESSION_KEY = 'sgcm.session'
 
 async function postJson(path, body) {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  return response.json()
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const payload = await response.json().catch(() => null)
+    if (response.status === 429) return { success: false, message: 'Demasiados intentos. Espera un momento antes de volver a intentarlo.' }
+    if (!payload) return { success: false, message: 'El servidor no pudo procesar la solicitud. Inténtalo de nuevo.' }
+    return payload
+  } catch {
+    return { success: false, message: 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.' }
+  }
 }
 
 export function register(dto) {
@@ -33,11 +40,11 @@ export function resetPassword(userId, token, newPassword, confirmPassword) {
 }
 
 export function saveSession(authResponse) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(authResponse))
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(authResponse))
 }
 
 export function getSession() {
-  const raw = localStorage.getItem(SESSION_KEY)
+  const raw = sessionStorage.getItem(SESSION_KEY)
   if (!raw) return null
 
   const session = JSON.parse(raw)
@@ -49,5 +56,6 @@ export function getSession() {
 }
 
 export function clearSession() {
+  sessionStorage.removeItem(SESSION_KEY)
   localStorage.removeItem(SESSION_KEY)
 }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using SGCM.Application.DTOs.Appointment;
 using SGCM.Application.Interfaces;
 using SGCM.Domain.Constants;
@@ -14,10 +15,12 @@ namespace SGCM.Controllers;
 public class AppointmentController : ControllerBase
 {
     private readonly IAppointmentService _appointmentService;
+    private readonly IPatientService _patientService;
 
-    public AppointmentController(IAppointmentService appointmentService)
+    public AppointmentController(IAppointmentService appointmentService, IPatientService patientService)
     {
         _appointmentService = appointmentService;
+        _patientService = patientService;
     }
 
     [HttpGet]
@@ -41,6 +44,20 @@ public class AppointmentController : ControllerBase
     [Authorize(Roles = AppRoles.Patient + "," + AppRoles.Admin)]
     public async Task<IActionResult> Create([FromBody] CreateAppointmentDto dto)
     {
+        // A patient may only schedule an appointment for their own profile. Administrators
+        // retain the ability to create appointments for a patient selected by their workflow.
+        if (User.IsInRole(AppRoles.Patient) && !User.IsInRole(AppRoles.Admin))
+        {
+            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(appUserId))
+                return Unauthorized(new OperationResult { Success = false, Message = "No se pudo identificar al usuario autenticado." });
+
+            var patientResult = await _patientService.GetByAppUserId(appUserId);
+            if (!patientResult.Success)
+                return BadRequest(new OperationResult { Success = false, Message = "No se encontró un perfil de paciente asociado a tu cuenta." });
+
+            dto.PatientId = ((SGCM.Application.DTOs.Patient.PatientDto)patientResult.Data!).Id;
+        }
         var result = await _appointmentService.Create(dto);
         return result.Success ? StatusCode(StatusCodes.Status201Created, result) : BadRequest(result);
     }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SGCM.Application.DTOs.Account;
 using SGCM.Application.Interfaces;
 
@@ -23,6 +24,7 @@ namespace SGCM.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
             var result = await _accountService.Login(dto);
@@ -37,6 +39,7 @@ namespace SGCM.Controllers
         }
 
         [HttpPost("forgot-password")]
+        [EnableRateLimiting("password-recovery")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
         {
             var result = await _accountService.ForgotPassword(dto);
@@ -44,6 +47,7 @@ namespace SGCM.Controllers
         }
 
         [HttpPost("reset-password")]
+        [EnableRateLimiting("password-recovery")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
         {
             var result = await _accountService.ResetPassword(dto);

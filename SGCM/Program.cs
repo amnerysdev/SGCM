@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Options;
+using System.Threading.RateLimiting;
 using SGCM.Data.Context;
 using SGCM.Data;
 using SGCM.Application;
@@ -30,6 +31,16 @@ namespace SGCM
 
             // Add services to the container.
             builder.Services.AddControllers();
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+                options.AddPolicy("password-recovery", context => RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions { PermitLimit = 3, Window = TimeSpan.FromMinutes(15), QueueLimit = 0 }));
+            });
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
@@ -82,6 +93,7 @@ namespace SGCM
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
+            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
 

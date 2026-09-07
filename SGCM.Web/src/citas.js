@@ -1,307 +1,36 @@
 import { serializeLocalDateTime } from './appointment-utils.js'
 import { getSession } from './api.js'
 
-function authHeaders() {
-  const session = getSession()
-  const token = session?.jwToken || session?.jwtToken || session?.token
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
+document.body.classList.add('appointment-confirmation-shell')
+document.querySelector('.app-shell')?.classList.add('appointment-confirmation-shell')
 
-const appointmentForm = document.getElementById('appointment-form')
-const searchForm = document.getElementById('search-form')
-const appointmentsForm = document.getElementById('appointments-form')
-const errorEl = document.getElementById('error')
-const messageEl = document.getElementById('message')
-
-let feedbackTimeoutId = null
-
-function clearFeedbackTimer() {
-  if (feedbackTimeoutId) {
-    clearTimeout(feedbackTimeoutId)
-    feedbackTimeoutId = null
-  }
-}
-
-function show(element, message, html = false, autoHide = true) {
-  clearFeedbackTimer()
-  if (html) {
-    element.innerHTML = message
-  } else {
-    element.textContent = message
-  }
-  element.hidden = false
-
-  if (autoHide) {
-    feedbackTimeoutId = window.setTimeout(() => {
-      element.hidden = true
-      element.textContent = ''
-      element.innerHTML = ''
-      feedbackTimeoutId = null
-    }, 4000)
-  }
-}
-
-function hideMessages() {
-  clearFeedbackTimer()
-  errorEl.hidden = true
-  messageEl.hidden = true
-  messageEl.textContent = ''
-  messageEl.innerHTML = ''
-}
-
-async function api(path, options = {}) {
-  return requestJson(`/api/appointments${path}`, options)
-}
-
-async function availability(path) {
-  return requestJson(`/api/availability${path}`)
-}
-
-async function requestJson(url, options = {}) {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 10000)
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(options.headers || {}) },
-      signal: controller.signal,
-    })
-    if (response.status === 401) {
-      throw new Error('Tu sesión no es válida o ha expirado.')
-    }
-
-    const body = await response.text()
-    let result
-
-    try {
-      result = body ? JSON.parse(body) : null
-    } catch {
-      throw new Error('El servidor devolvió una respuesta no válida.')
-    }
-
-    if (!response.ok || !result?.success) {
-      throw new Error(result?.message ?? 'No se pudo completar la operación.')
-    }
-    return result.data
-  } catch (error) {
-    if (error.name === 'AbortError') throw new Error('La solicitud tardó demasiado. Intenta nuevamente.')
-    if (error instanceof TypeError) throw new Error('No se pudo conectar con el servidor.')
-    throw error
-  } finally {
-    clearTimeout(timeout)
-  }
-}
-
-function toDateTime(date, time) {
-  return new Date(`${date}T${time}`)
-}
-
-function getDay(date) {
-  return ((new Date(`${date}T00:00:00`).getDay() + 6) % 7) + 1
-}
-
-function formatDateTime(value) {
-  return new Date(value).toLocaleString('es-DO', { dateStyle: 'medium', timeStyle: 'short' })
-}
-
-function statusLabel(status) {
-  return ({ 1: 'Pendiente', 2: 'Confirmada', 3: 'Completada', 4: 'Cancelada' })[status] ?? 'Sin estado'
-}
-
-function buildRescheduleForm(appointment, onDone) {
-  const form = document.createElement('form')
-  form.className = 'reschedule-form'
-  form.hidden = true
-
-  const input = document.createElement('input')
-  input.type = 'datetime-local'
-  input.required = true
-
-  const save = document.createElement('button')
-  save.type = 'submit'
-  save.textContent = 'Guardar nueva fecha'
-
-  form.append(input, save)
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    if (!input.value) return
-    try {
-      await api(`/${appointment.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          dateTime: serializeLocalDateTime(new Date(input.value)),
-          reason: appointment.reason,
-        }),
-      })
-      show(messageEl, 'La cita fue reprogramada y quedó pendiente de confirmación.')
-      onDone()
-    } catch (error) {
-      show(errorEl, error.message)
-    }
-  })
-
-  return form
-}
-
-function renderAppointments(appointments) {
-  const list = document.getElementById('appointments-list')
-  list.replaceChildren()
-  if (!appointments.length) {
-    list.textContent = 'No tienes citas registradas.'
-    return
-  }
-
-  appointments.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime)).forEach((appointment) => {
-    const row = document.createElement('div')
-    row.className = 'appointment-item'
-    const detail = document.createElement('p')
-    detail.className = 'appointment-meta'
-    detail.textContent = `${formatDateTime(appointment.dateTime)} — ${appointment.reason} · ${statusLabel(appointment.status)}`
-    row.append(detail)
-    if (appointment.status === 1 || appointment.status === 2) {
-      const actions = document.createElement('div')
-      actions.className = 'appointment-actions'
-
-      const rescheduleForm = buildRescheduleForm(appointment, () => appointmentsForm.requestSubmit())
-
-      const reschedule = document.createElement('button')
-      reschedule.type = 'button'
-      reschedule.textContent = 'Reprogramar'
-      reschedule.className = 'button-secondary'
-      reschedule.addEventListener('click', () => {
-        rescheduleForm.hidden = !rescheduleForm.hidden
-      })
-
-      const cancel = document.createElement('button')
-      cancel.type = 'button'
-      cancel.textContent = 'Cancelar cita'
-      cancel.className = 'cancel-button'
-      cancel.addEventListener('click', async () => {
-        if (!confirm('¿Deseas cancelar esta cita?')) return
-        try {
-          await api(`/${appointment.id}/cancel`, { method: 'PATCH' })
-          show(messageEl, 'La cita fue cancelada.')
-          appointmentsForm.requestSubmit()
-        } catch (error) {
-          show(errorEl, error.message)
-        }
-      })
-
-      actions.append(reschedule, cancel)
-      row.append(actions, rescheduleForm)
-    }
-    list.append(row)
-  })
-}
-
-if (searchForm) {
-  let selectedDateTime = null
-  searchForm.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    hideMessages()
-    const doctorId = document.getElementById('doctor-id').value.trim()
-    const date = document.getElementById('date').value
-    const slots = document.getElementById('slots')
-    appointmentForm.hidden = true
-    slots.replaceChildren()
-    slots.hidden = false
-
-    try {
-      const [weeklyAvailability, appointments] = await Promise.all([
-        availability(`/doctor/${encodeURIComponent(doctorId)}`),
-        api(`/doctor/${encodeURIComponent(doctorId)}`),
-      ])
-      const daySlots = weeklyAvailability.filter((item) => item.day === getDay(date))
-      const occupied = new Set(appointments
-        .filter((item) => item.status !== 4 && new Date(item.dateTime).toDateString() === toDateTime(date, '00:00').toDateString())
-        .map((item) => new Date(item.dateTime).getTime()))
-      const availableSlots = []
-      daySlots.forEach((block) => {
-        const cursor = toDateTime(date, block.startTime)
-        const end = toDateTime(date, block.endTime)
-        while (cursor < end) {
-          if (!occupied.has(cursor.getTime()) && cursor > new Date()) availableSlots.push(new Date(cursor))
-          cursor.setMinutes(cursor.getMinutes() + 30)
-        }
-      })
-      if (!availableSlots.length) {
-        const empty = document.createElement('p')
-        empty.className = 'empty-state'
-        empty.textContent = 'No hay horarios libres para esta fecha. Prueba con otro día.'
-        slots.append(empty)
-        return
-      }
-      const title = document.createElement('p')
-      title.className = 'section-description'
-      title.textContent = 'Paso 2: selecciona un horario disponible.'
-      slots.append(title)
-      const grid = document.createElement('div')
-      grid.className = 'slot-grid'
-      slots.append(grid)
-      availableSlots.forEach((slot) => {
-        const button = document.createElement('button')
-        button.type = 'button'
-        button.textContent = slot.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' })
-        button.className = 'slot-button'
-        button.addEventListener('click', () => {
-          selectedDateTime = slot
-          grid.querySelectorAll('.slot-button').forEach((item) => item.classList.remove('is-selected'))
-          button.classList.add('is-selected')
-          document.getElementById('selected-slot').textContent = `Horario seleccionado: ${formatDateTime(slot.toISOString())}`
-          appointmentForm.hidden = false
-          appointmentForm.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        })
-        grid.append(button)
-      })
-    } catch (error) {
-      show(errorEl, error.message)
-    }
-  })
-
-  appointmentForm.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    hideMessages()
-    try {
-      await api('', {
-        method: 'POST',
-        body: JSON.stringify({
-          patientId: document.getElementById('patient-id').value.trim(),
-          doctorId: document.getElementById('doctor-id').value.trim(),
-          dateTime: serializeLocalDateTime(selectedDateTime),
-          reason: document.getElementById('reason').value.trim(),
-        }),
-      })
-      appointmentForm.reset()
-      searchForm.reset()
-      appointmentForm.hidden = true
-      document.getElementById('selected-slot').textContent = ''
-      const slots = document.getElementById('slots')
-      slots.replaceChildren()
-      slots.hidden = true
-      selectedDateTime = null
-      show(
-        messageEl,
-        'La cita se registró correctamente. Puedes consultar y verificar sus detalles desde <a class="success-link" href="/mis-citas.html">Seguimiento de Citas</a>.',
-        true,
-        false
-      )
-    } catch (error) {
-      show(errorEl, error.message)
-    }
-  })
-}
-
-if (appointmentsForm) {
-  appointmentsForm.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    hideMessages()
-    try {
-      const patientId = document.getElementById('patient-id').value.trim()
-      renderAppointments(await api(`/patient/${encodeURIComponent(patientId)}`))
-    } catch (error) {
-      show(errorEl, error.message)
-    }
-  })
-}
+const form = document.getElementById('booking-form'), specialty = document.getElementById('specialty'), doctor = document.getElementById('doctor'), dateInput = document.getElementById('appointment-date'), reason = document.getElementById('reason'), slots = document.getElementById('slots'), error = document.getElementById('booking-error'), submit = document.getElementById('submit-booking'), selection = document.getElementById('booking-selection'), summary = document.getElementById('slot-summary')
+const steps = [...document.querySelectorAll('.booking-steps li')]
+let patientId = null, doctors = [], selectedSlot = null
+function headers() { const session = getSession(), token = session?.jwToken || session?.jwtToken || session?.token; return token ? { Authorization: `Bearer ${token}` } : {} }
+async function request(url, options = {}) { const response = await fetch(url, { ...options, headers: { ...headers(), 'Content-Type': 'application/json', ...(options.headers || {}) } }), payload = await response.json().catch(() => null); if (response.status === 401) throw new Error('Tu sesión no es válida o ha expirado.'); if (!response.ok || !payload?.success) throw new Error(payload?.message || 'No se pudo completar la operación.'); return payload.data }
+function setError(field, message = '') { document.getElementById(`${field}-error`).textContent = message; document.getElementById(field === 'date' ? 'appointment-date' : field)?.setAttribute('aria-invalid', String(Boolean(message))) }
+function clearFeedback() { error.hidden = true; error.textContent = '' }
+function showError(message) { error.textContent = message; error.hidden = false; error.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) }
+function setCurrentStep(index) { steps.forEach((step, position) => { const completed = position < index, current = position === index; step.classList.toggle('is-complete', completed); step.classList.toggle('is-current', current); if (current) step.setAttribute('aria-current', 'step'); else step.removeAttribute('aria-current') }) }
+const formatDate = value => new Intl.DateTimeFormat('es-DO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(value)
+const formatTime = value => new Intl.DateTimeFormat('es-DO', { hour: '2-digit', minute: '2-digit' }).format(value)
+const getDay = value => ((new Date(`${value}T00:00:00`).getDay() + 6) % 7) + 1
+const toDateTime = (date, time) => new Date(`${date}T${time}`)
+function resetSlots(message = 'Selecciona un profesional y una fecha para consultar horarios.') { selectedSlot = null; slots.replaceChildren(); summary.textContent = message; selection.textContent = 'Aún no has seleccionado un horario.'; submit.disabled = true; setError('time') }
+function updateDoctors() { const specialtyId = specialty.value; doctor.replaceChildren(new Option(specialtyId ? 'Selecciona un profesional' : 'Selecciona primero una especialidad', '')); doctors.filter(item => item.specialtyId === specialtyId).forEach(item => doctor.add(new Option(`Profesional · Lic. ${item.medicalLicense || 'No disponible'}`, item.id))); doctor.disabled = !specialtyId; dateInput.disabled = true; resetSlots() }
+async function loadSlots() { clearFeedback(); setError('date'); resetSlots('Consultando horarios disponibles…'); if (!doctor.value || !dateInput.value) return; try { const [availability, appointments] = await Promise.all([request(`/api/availability/doctor/${encodeURIComponent(doctor.value)}`), request(`/api/appointments/doctor/${encodeURIComponent(doctor.value)}`)]), occupied = new Set(appointments.filter(item => item.status !== 4 && new Date(item.dateTime).toDateString() === toDateTime(dateInput.value, '00:00').toDateString()).map(item => new Date(item.dateTime).getTime())), available = []; availability.filter(item => item.day === getDay(dateInput.value)).forEach(block => { const cursor = toDateTime(dateInput.value, block.startTime), end = toDateTime(dateInput.value, block.endTime); while (cursor < end) { if (cursor > new Date() && !occupied.has(cursor.getTime())) available.push(new Date(cursor)); cursor.setMinutes(cursor.getMinutes() + 30) } }); if (!available.length) { summary.textContent = 'No hay horarios libres en esta fecha.'; slots.innerHTML = '<p class="booking-empty">Prueba con otra fecha o selecciona otro profesional.</p>'; return } summary.textContent = `${available.length} horario${available.length === 1 ? '' : 's'} disponible${available.length === 1 ? '' : 's'} el ${formatDate(toDateTime(dateInput.value, '00:00'))}.`; const grid = document.createElement('div'); grid.className = 'booking-slot-grid'; available.forEach(slot => { const button = document.createElement('button'); button.type = 'button'; button.className = 'booking-slot'; button.textContent = formatTime(slot); button.setAttribute('aria-pressed', 'false'); button.addEventListener('click', () => { selectedSlot = slot; grid.querySelectorAll('button').forEach(item => { item.classList.remove('is-selected'); item.setAttribute('aria-pressed', 'false') }); button.classList.add('is-selected'); button.setAttribute('aria-pressed', 'true'); selection.textContent = `${formatDate(slot)} · ${formatTime(slot)}`; submit.disabled = !reason.value.trim(); setCurrentStep(2); setError('time') }); grid.append(button) }); slots.append(grid) } catch (exception) { resetSlots('No fue posible consultar los horarios.'); showError(exception.message) } }
+async function initialize() { dateInput.min = new Date().toISOString().slice(0, 10); try { const [patient, specialtyList, doctorList] = await Promise.all([request('/api/patients/me'), request('/api/specialties'), request('/api/doctors')]); patientId = patient.id; doctors = doctorList; specialty.replaceChildren(new Option('Selecciona una especialidad', '')); specialtyList.forEach(item => specialty.add(new Option(item.name, item.id))); specialty.disabled = false } catch (exception) { showError(exception.message || 'No se pudo preparar el formulario de agendamiento.') } }
+const escapeHtml = value => String(value).replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character])
+const icon = (name) => ({
+  success: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="m14 24 7 7 14-16"/></svg>',
+  calendar: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="20" rx="2"/><path d="M10 4v6m12-6v6M5 13h22m-12 5v6m-3-3h6"/></svg>',
+  stethoscope: '<svg viewBox="0 0 42 42" aria-hidden="true"><path d="M14 6v10a7 7 0 0 0 14 0V6m-14 0h-3m3 0h3m11 0h3m-3 0h-3M21 23v6a6 6 0 0 0 12 0v-3"/><circle cx="33" cy="22" r="3"/></svg>',
+  professional: '<svg viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="13" r="7"/><path d="M10 34v-4c0-5 5-8 11-8s11 3 11 8v4m-15-8v8m8-8v8m-5-3h6"/></svg>',
+  date: '<svg viewBox="0 0 42 42" aria-hidden="true"><rect x="8" y="9" width="25" height="24" rx="2"/><path d="M14 5v8m13-8v8M8 17h25"/><circle cx="28" cy="28" r="6"/><path d="M28 25v3l2 2"/></svg>',
+  history: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 15a10 10 0 1 1 3 7"/><path d="M6 22v-6h6m4-7v7l-4-2"/></svg>',
+  appointmentStatus: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5.5 15.8a10.5 10.5 0 1 1 3.1 7.4"/><path d="M5.5 23.2v-6.4h6.4"/><path d="M16 9.5V16l-4.2 2.6"/></svg>'
+}[name])
+specialty.addEventListener('change', () => { setError('specialty'); updateDoctors(); setCurrentStep(0) }); doctor.addEventListener('change', () => { setError('doctor'); dateInput.disabled = !doctor.value; resetSlots(doctor.value ? 'Selecciona una fecha para consultar horarios.' : undefined); if (doctor.value) setCurrentStep(1) }); dateInput.addEventListener('change', loadSlots); reason.addEventListener('input', () => { document.getElementById('reason-count').textContent = `${reason.value.length}/500`; setError('reason'); submit.disabled = !selectedSlot || !reason.value.trim() })
+form.addEventListener('submit', async event => { event.preventDefault(); clearFeedback(); let valid = true; if (!specialty.value) { setError('specialty', 'Selecciona una especialidad.'); valid = false } if (!doctor.value) { setError('doctor', 'Selecciona un profesional.'); valid = false } if (!dateInput.value) { setError('date', 'Selecciona una fecha.'); valid = false } if (!selectedSlot) { setError('time', 'Selecciona un horario disponible.'); valid = false } if (!reason.value.trim()) { setError('reason', 'Describe brevemente el motivo de tu consulta.'); valid = false } if (!valid || !patientId) return; submit.disabled = true; submit.textContent = 'Agendando cita…'; try { await request('/api/appointments', { method: 'POST', body: JSON.stringify({ patientId, doctorId: doctor.value, dateTime: serializeLocalDateTime(selectedSlot), reason: reason.value.trim() }) }); const doctorLabel = escapeHtml(doctor.selectedOptions[0].textContent), specialtyLabel = escapeHtml(specialty.selectedOptions[0].textContent), dateLabel = escapeHtml(formatDate(selectedSlot)), timeLabel = escapeHtml(formatTime(selectedSlot)); document.getElementById('booking-confirmation').innerHTML = `<div class="confirmation-success"><div class="confirmation-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="confirmation-icon">${icon('success')}</div><h2>¡Cita registrada con éxito!</h2><p>Hemos recibido tu solicitud y te notificaremos cuando sea confirmada.</p></div><section class="appointment-details" aria-labelledby="appointment-details-title"><div class="appointment-details-heading"><span></span><h3 id="appointment-details-title">${icon('calendar')}Detalles de tu cita</h3><span></span></div><dl class="appointment-details-card"><div class="appointment-detail"><div class="appointment-detail-icon">${icon('stethoscope')}</div><dt>Especialidad</dt><dd>${specialtyLabel}</dd></div><div class="appointment-detail"><div class="appointment-detail-icon">${icon('professional')}</div><dt>Profesional</dt><dd>${doctorLabel}</dd></div><div class="appointment-detail"><div class="appointment-detail-icon">${icon('date')}</div><dt>Fecha y hora</dt><dd>${dateLabel}</dd><time>${icon('history')}${timeLabel}</time></div></dl></section><a class="appointment-status-link" href="/mis-citas.html">${icon('appointmentStatus')}<span>Ver estado de mi cita</span></a>`; document.getElementById('booking-confirmation').hidden = false; form.hidden = true; setCurrentStep(2); document.getElementById('booking-confirmation').scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (exception) { showError(exception.message); submit.disabled = false; submit.textContent = 'Confirmar cita' } })
+initialize()

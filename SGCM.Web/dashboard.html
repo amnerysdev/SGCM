@@ -3,19 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SGCM - Panel</title>
+    <title>SGCM - Panel principal</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
-  <body>
-    <div class="container">
-      <div class="card card--wide">
-        <p class="eyebrow">Panel principal</p><h1>Bienvenido</h1>
-        <p id="welcome"></p>
-        <div class="info-box"><span aria-hidden="true">i</span><span>Tu perfil actual: <span id="role" class="badge"></span></span></div>
-        <nav id="quick-links" class="quick-links" aria-label="Accesos rápidos"></nav>
-        <button id="logout-button" type="button">Cerrar sesión</button>
-      </div>
-    </div>
+  <body class="dashboard-body">
+    <main class="dashboard-main dashboard-home-main" aria-label="Inicio">
+      <img class="dashboard-home-logo" src="/src/assets/sgcm-dashboard-logo.png" alt="Sistema de Gestión de Citas Médicas" />
+    </main>
     <script type="module" src="/src/dashboard.js"></script>
   </body>
 </html>

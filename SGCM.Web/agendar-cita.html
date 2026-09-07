@@ -1,32 +1,14 @@
 <!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SGCM - Agendar cita</title>
-    <link rel="stylesheet" href="/src/style.css" />
-  </head>
-  <body>
-    <main class="container"><section class="card card--wide">
-      <p class="eyebrow">Citas médicas</p>
-      <h1>Agendar una cita</h1>
-      <p class="lead">Primero consulta la agenda del médico y después elige el horario que más te convenga.</p>
-      <p id="error" class="error" role="alert" aria-live="assertive" hidden></p><p id="message" class="success" role="status" aria-live="polite" hidden></p>
-      <div class="info-box"><span aria-hidden="true">1</span><span><strong>Busca disponibilidad.</strong> Ingresa el identificador del médico y una fecha.</span></div>
-      <form id="search-form" class="form-section">
-        <div class="field"><label for="doctor-id">ID del doctor</label><input id="doctor-id" placeholder="Ej.: doctor-demo-001" required aria-describedby="doctor-help" /><p id="doctor-help" class="helper-text">Usa el identificador del perfil del médico.</p></div>
-        <div class="field"><label for="date">Fecha de la cita</label><input id="date" type="date" required /><p class="helper-text">Solo se muestran horarios disponibles para ese día.</p></div>
-        <button type="submit">Ver horarios libres</button>
-      </form>
-      <section id="slots" class="results-section" aria-live="polite" aria-label="Horarios disponibles" hidden></section>
-      <form id="appointment-form" class="form-section" hidden>
-        <div class="section-heading"><p class="eyebrow">Paso 2</p><h2>Confirma tu cita</h2><p class="section-description">Completa tus datos para reservar el horario elegido.</p></div>
-        <p id="selected-slot" class="selected-slot"></p>
-        <div class="field"><label for="patient-id">ID del paciente</label><input id="patient-id" placeholder="Ej.: patient-demo-001" required /></div>
-        <div class="field"><label for="reason">Motivo de la consulta</label><input id="reason" placeholder="Ej.: Consulta general" maxlength="500" required /><p class="helper-text">Describe brevemente el motivo de la cita.</p></div>
-        <button type="submit">Confirmar y agendar cita</button>
-      </form>
-    </section></main>
-    <script type="module" src="/src/citas.js"></script>
-  </body>
-</html>
+<html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>SGCM - Agendar cita</title><link rel="stylesheet" href="/src/style.css" /></head><body>
+  <section class="booking-page" aria-labelledby="booking-title">
+    <header class="booking-heading"><div><p class="eyebrow">Atención médica</p><h1 id="booking-title">Agenda una cita</h1><p>Elige el profesional, la fecha y el horario que mejor se adapten a ti.</p></div></header>
+    <ol class="booking-steps" aria-label="Progreso del agendamiento"><li class="is-current" aria-current="step"><span>1</span><strong>Profesional</strong></li><li><span>2</span><strong>Fecha y hora</strong></li><li><span>3</span><strong>Confirmación</strong></li></ol>
+    <p id="booking-error" class="alert alert--error" role="alert" hidden></p><section id="booking-confirmation" class="booking-confirmation" aria-live="polite" hidden></section>
+    <form id="booking-form" novalidate>
+      <section class="booking-panel" aria-labelledby="details-heading"><div class="booking-panel-heading"><div class="booking-panel-number">1</div><div><h2 id="details-heading">Selecciona la atención</h2><p>Primero indica el área médica y el profesional.</p></div></div><div class="booking-fields"><div class="field"><label for="specialty">Especialidad</label><select id="specialty" required disabled><option value="">Cargando especialidades…</option></select><p id="specialty-error" class="field-error" aria-live="polite"></p></div><div class="field"><label for="doctor">Profesional</label><select id="doctor" required disabled><option value="">Selecciona primero una especialidad</option></select><p id="doctor-error" class="field-error" aria-live="polite"></p></div></div></section>
+      <section class="booking-panel" aria-labelledby="schedule-heading"><div class="booking-panel-heading"><div class="booking-panel-number">2</div><div><h2 id="schedule-heading">Encuentra un horario</h2><p>Los horarios se actualizan según la agenda del profesional.</p></div></div><div class="booking-fields booking-fields--date"><div class="field"><label for="appointment-date">Fecha de la cita</label><input id="appointment-date" type="date" required disabled /><p id="date-error" class="field-error" aria-live="polite"></p></div><div class="field booking-availability"><p class="field-label">Disponibilidad</p><div class="booking-slot-summary" id="slot-summary" aria-live="polite">Selecciona un profesional y una fecha para consultar horarios.</div></div></div><div id="slots" class="booking-slots" aria-live="polite"></div><p id="time-error" class="field-error" aria-live="polite"></p></section>
+      <section class="booking-panel" aria-labelledby="reason-heading"><div class="booking-panel-heading"><div class="booking-panel-number">3</div><div><h2 id="reason-heading">Motivo de la consulta</h2><p>Comparte una breve descripción para preparar tu atención.</p></div></div><div class="booking-reason-field"><textarea id="reason" rows="4" maxlength="500" required aria-label="Motivo de la consulta" placeholder="Describe brevemente el motivo de tu consulta."></textarea><div class="field-meta"><span>Máximo 500 caracteres.</span><span id="reason-count">0/500</span></div><p id="reason-error" class="field-error" aria-live="polite"></p></div></section>
+      <footer class="booking-actions"><p id="booking-selection" class="booking-selection">Aún no has seleccionado un horario.</p><button id="submit-booking" type="submit" disabled>Confirmar cita</button></footer>
+    </form>
+  </section><script type="module" src="/src/app-shell.js"></script><script type="module" src="/src/citas.js"></script>
+</body></html>

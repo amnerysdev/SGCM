@@ -8,6 +8,8 @@ using SGCM.Domain.Constants;
 using SGCM.Domain.Core;
 using SGCM.Domain.Entities;
 using SGCM.Domain.Settings;
+using System.Net.Mail;
+using System.Text.RegularExpressions;
 
 namespace SGCM.Application.Services
 {
@@ -38,23 +40,35 @@ namespace SGCM.Application.Services
                 return new OperationResult { Success = false, Message = "El nombre completo no puede estar vacío." };
             if (string.IsNullOrWhiteSpace(dto.Email))
                 return new OperationResult { Success = false, Message = "El correo electrónico no puede estar vacío." };
+            if (!IsValidEmail(dto.Email))
+                return new OperationResult { Success = false, Message = "Ingresa un correo electrónico válido." };
+            var phoneValidationMessage = GetDominicanPhoneValidationMessage(dto.PhoneNumber, out var normalizedPhone);
+            if (phoneValidationMessage is not null)
+                return new OperationResult { Success = false, Message = phoneValidationMessage };
             if (string.IsNullOrWhiteSpace(dto.Password))
                 return new OperationResult { Success = false, Message = "La contraseña no puede estar vacía." };
             if (!RegistroValidator.PasswordsMatch(dto.Password, dto.ConfirmPassword))
                 return new OperationResult { Success = false, Message = "Las contraseñas no coinciden." };
+            var passwordValidationMessage = GetPasswordValidationMessage(dto.Password);
+            if (passwordValidationMessage is not null)
+                return new OperationResult { Success = false, Message = passwordValidationMessage };
             if (!AppRoles.SelfRegisterable.Contains(dto.Role))
                 return new OperationResult { Success = false, Message = "El rol especificado no es válido." };
 
-            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            var email = dto.Email.Trim();
+            var existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser is not null)
                 return new OperationResult { Success = false, Message = "Ya existe una cuenta con ese correo electrónico." };
 
             var user = new AppUser
             {
-                UserName = dto.Email,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                FullName = dto.FullName
+                UserName = email,
+                Email = email,
+                PhoneNumber = normalizedPhone,
+                FullName = dto.FullName.Trim(),
+                // Mientras se usa el almacén en memoria no existe confirmación por correo.
+                // La cuenta queda habilitada para que el usuario pueda iniciar sesión.
+                EmailConfirmed = true
             };
 
             var createResult = await _userManager.CreateAsync(user, dto.Password);
@@ -72,28 +86,10 @@ namespace SGCM.Application.Services
                 return new OperationResult { Success = false, Message = errors };
             }
 
-            var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmationLink = $"{_frontendSettings.BaseUrl}/confirm-email.html?userId={user.Id}&token={Uri.EscapeDataString(confirmationToken)}";
-
-            try
-            {
-                await _emailSender.SendEmailAsync(
-                    user.Email!,
-                    "Confirma tu cuenta - SGCM",
-                    $"<p>Hola {user.FullName},</p>" +
-                    $"<p>Gracias por registrarte en SGCM. Confirma tu cuenta haciendo clic en el siguiente enlace:</p>" +
-                    $"<p><a href=\"{confirmationLink}\">Confirmar mi cuenta</a></p>");
-            }
-            catch
-            {
-                await _userManager.DeleteAsync(user);
-                return new OperationResult { Success = false, Message = "No se pudo enviar el correo de confirmación. Intenta registrarte nuevamente." };
-            }
-
             return new OperationResult
             {
                 Success = true,
-                Message = "Registro exitoso. Revisa tu correo electrónico para confirmar tu cuenta antes de iniciar sesión."
+                Message = "Tu cuenta fue creada correctamente. Ya puedes iniciar sesión."
             };
         }
 
@@ -125,9 +121,11 @@ namespace SGCM.Application.Services
 
             if (dto is null || string.IsNullOrWhiteSpace(dto.Email))
                 return new OperationResult { Success = false, Message = "El correo electrónico no puede estar vacío." };
+            if (!IsValidEmail(dto.Email))
+                return new OperationResult { Success = false, Message = "Ingresa un correo electrónico válido." };
 
-            var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user is null)
+            var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+            if (user is null || !user.IsActive || !user.EmailConfirmed)
                 return new OperationResult { Success = true, Message = genericMessage };
 
             var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -159,6 +157,9 @@ namespace SGCM.Application.Services
                 return new OperationResult { Success = false, Message = "La contraseña no puede estar vacía." };
             if (!RegistroValidator.PasswordsMatch(dto.NewPassword, dto.ConfirmPassword))
                 return new OperationResult { Success = false, Message = "Las contraseñas no coinciden." };
+            var passwordValidationMessage = GetPasswordValidationMessage(dto.NewPassword);
+            if (passwordValidationMessage is not null)
+                return new OperationResult { Success = false, Message = passwordValidationMessage };
 
             var user = await _userManager.FindByIdAsync(dto.UserId);
             if (user is null)
@@ -178,14 +179,26 @@ namespace SGCM.Application.Services
         {
             if (dto is null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
                 return new OperationResult { Success = false, Message = "Credenciales inválidas." };
+            if (!IsValidEmail(dto.Email))
+                return new OperationResult { Success = false, Message = "Credenciales inválidas." };
 
-            var user = await _userManager.FindByEmailAsync(dto.Email);
+            var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
             if (user is null)
+                return new OperationResult { Success = false, Message = "Credenciales inválidas." };
+
+            if (user.LockoutEnabled && await _userManager.IsLockedOutAsync(user))
                 return new OperationResult { Success = false, Message = "Credenciales inválidas." };
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!passwordValid)
+            {
+                if (user.LockoutEnabled)
+                    await _userManager.AccessFailedAsync(user);
                 return new OperationResult { Success = false, Message = "Credenciales inválidas." };
+            }
+
+            if (user.LockoutEnabled)
+                await _userManager.ResetAccessFailedCountAsync(user);
 
             if (!user.EmailConfirmed)
                 return new OperationResult { Success = false, Message = "Debes confirmar tu correo electrónico antes de iniciar sesión." };
@@ -213,5 +226,58 @@ namespace SGCM.Application.Services
             JWToken = token,
             Expiration = expiration
         };
+
+        private static bool IsValidEmail(string email)
+        {
+            try
+            {
+                var address = new MailAddress(email.Trim());
+                return address.Address.Equals(email.Trim(), StringComparison.OrdinalIgnoreCase);
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private static string? GetDominicanPhoneValidationMessage(string? phone, out string normalizedPhone)
+        {
+            normalizedPhone = string.Empty;
+            var value = phone?.Trim() ?? string.Empty;
+            if (value.Length == 0) return "El teléfono es obligatorio.";
+            if (!Regex.IsMatch(value, @"^\+?[0-9() .-]+$") || (value.Contains('+') && !value.StartsWith('+')))
+                return "Usa solo dígitos; se permiten espacios, guiones, paréntesis y el prefijo +1.";
+
+            var hasCountryCode = value.StartsWith('+');
+            var digits = Regex.Replace(value, "[^0-9]", string.Empty);
+            if (hasCountryCode)
+            {
+                if (!digits.StartsWith('1')) return "El único código de país admitido es +1.";
+                digits = digits[1..];
+            }
+
+            if (digits.Length != 10) return "Ingresa un número dominicano de 10 dígitos, con o sin el prefijo +1.";
+            if (digits.Distinct().Count() == 1) return "Ingresa un número de teléfono válido.";
+
+            var areaCode = digits[..3];
+            if (areaCode is not ("809" or "829" or "849"))
+                return "El código de área debe ser 809, 829 o 849.";
+            if (digits[3] is < '2' or > '9')
+                return "El número telefónico no tiene una estructura válida.";
+
+            normalizedPhone = $"+1{digits}";
+            return null;
+        }
+
+        private static string? GetPasswordValidationMessage(string password)
+        {
+            if (password.Length < 12) return "La contraseña debe tener al menos 12 caracteres.";
+            if (!password.Any(char.IsUpper)) return "La contraseña debe incluir al menos una letra mayúscula.";
+            if (!password.Any(char.IsLower)) return "La contraseña debe incluir al menos una letra minúscula.";
+            if (!password.Any(char.IsDigit)) return "La contraseña debe incluir al menos un número.";
+            if (!password.Any(character => !char.IsLetterOrDigit(character))) return "La contraseña debe incluir al menos un símbolo.";
+            if (password.Distinct().Count() < 6) return "La contraseña debe usar al menos 6 caracteres distintos.";
+            return null;
+        }
     }
 }

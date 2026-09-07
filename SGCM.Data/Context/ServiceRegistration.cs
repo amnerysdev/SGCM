@@ -21,11 +21,18 @@ namespace SGCM.Data.Context
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 8;
+                options.Password.RequiredLength = 12;
+                options.Password.RequiredUniqueChars = 6;
                 options.User.RequireUniqueEmail = true;
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
                 .AddEntityFrameworkStores<SgcmDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.Configure<DataProtectionTokenProviderOptions>(options =>
+                options.TokenLifespan = TimeSpan.FromHours(1));
 
             // 2. JWT Configuration
             services.Configure<JWTSettings>(configuration.GetSection("JWTSettings"));

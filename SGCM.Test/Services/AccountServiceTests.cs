@@ -34,13 +34,13 @@ namespace SGCM.Test.Services
             FullName = "Juan Perez",
             Email = "juan.perez@example.com",
             PhoneNumber = "8095551234",
-            Password = "Str0ng!Pass",
-            ConfirmPassword = "Str0ng!Pass",
+            Password = "Str0ng!Pass2026",
+            ConfirmPassword = "Str0ng!Pass2026",
             Role = AppRoles.Patient
         };
 
         [Fact]
-        public async Task Register_ValidDto_ShouldSendConfirmationEmail()
+        public async Task Register_ValidDto_ShouldCreateAnActiveConfirmedAccountWithoutSendingEmail()
         {
             var (userManager, _, emailSender, service) = CreateService();
             var dto = ValidRegisterDto();
@@ -48,12 +48,30 @@ namespace SGCM.Test.Services
             userManager.Setup(m => m.FindByEmailAsync(dto.Email)).ReturnsAsync((AppUser?)null);
             userManager.Setup(m => m.CreateAsync(It.IsAny<AppUser>(), dto.Password)).ReturnsAsync(IdentityResult.Success);
             userManager.Setup(m => m.AddToRoleAsync(It.IsAny<AppUser>(), dto.Role)).ReturnsAsync(IdentityResult.Success);
-            userManager.Setup(m => m.GenerateEmailConfirmationTokenAsync(It.IsAny<AppUser>())).ReturnsAsync("fake-confirmation-token");
 
             var result = await service.Register(dto);
 
             Assert.True(result.Success);
-            emailSender.Verify(e => e.SendEmailAsync(dto.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            Assert.Equal("Tu cuenta fue creada correctamente. Ya puedes iniciar sesión.", result.Message);
+            userManager.Verify(m => m.CreateAsync(It.Is<AppUser>(user => user.EmailConfirmed && user.IsActive && user.PhoneNumber == "+18095551234"), dto.Password), Times.Once);
+            emailSender.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData("809ABC1234")]
+        [InlineData("123456")]
+        [InlineData("0000000000")]
+        [InlineData("+44 20 7946 0958")]
+        public async Task Register_InvalidDominicanPhone_ShouldFailBeforeCreatingUser(string phoneNumber)
+        {
+            var (userManager, _, _, service) = CreateService();
+            var dto = ValidRegisterDto();
+            dto.PhoneNumber = phoneNumber;
+
+            var result = await service.Register(dto);
+
+            Assert.False(result.Success);
+            userManager.Verify(m => m.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -67,6 +85,20 @@ namespace SGCM.Test.Services
 
             Assert.False(result.Success);
             Assert.Equal("Las contraseñas no coinciden.", result.Message);
+        }
+
+        [Fact]
+        public async Task Register_WeakPassword_ShouldFailBeforeCreatingUser()
+        {
+            var (userManager, _, _, service) = CreateService();
+            var dto = ValidRegisterDto();
+            dto.Password = dto.ConfirmPassword = "Weak1!";
+
+            var result = await service.Register(dto);
+
+            Assert.False(result.Success);
+            Assert.Contains("12 caracteres", result.Message);
+            userManager.Verify(m => m.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -201,7 +233,7 @@ namespace SGCM.Test.Services
         {
             var (userManager, _, emailSender, service) = CreateService();
             var dto = new ForgotPasswordRequestDto { Email = "juan.perez@example.com" };
-            var user = new AppUser { Id = "user-1", Email = dto.Email, FullName = "Juan Perez" };
+            var user = new AppUser { Id = "user-1", Email = dto.Email, FullName = "Juan Perez", EmailConfirmed = true, IsActive = true };
 
             userManager.Setup(m => m.FindByEmailAsync(dto.Email)).ReturnsAsync(user);
             userManager.Setup(m => m.GeneratePasswordResetTokenAsync(user)).ReturnsAsync("fake-reset-token");
@@ -234,6 +266,35 @@ namespace SGCM.Test.Services
             var result = await service.ForgotPassword(new ForgotPasswordRequestDto { Email = "" });
 
             Assert.False(result.Success);
+        }
+
+        [Fact]
+        public async Task ForgotPassword_InvalidEmail_ShouldFailWithoutLookingUpUser()
+        {
+            var (userManager, _, _, service) = CreateService();
+
+            var result = await service.ForgotPassword(new ForgotPasswordRequestDto { Email = "correo-invalido" });
+
+            Assert.False(result.Success);
+            Assert.Equal("Ingresa un correo electrónico válido.", result.Message);
+            userManager.Verify(m => m.FindByEmailAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Login_FailedPassword_ForLockoutEnabledUser_RegistersFailure()
+        {
+            var (userManager, _, _, service) = CreateService();
+            var dto = new LoginRequestDto { Email = "juan.perez@example.com", Password = "WrongPassword" };
+            var user = new AppUser { Email = dto.Email, IsActive = true, EmailConfirmed = true, LockoutEnabled = true };
+            userManager.Setup(m => m.FindByEmailAsync(dto.Email)).ReturnsAsync(user);
+            userManager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(false);
+            userManager.Setup(m => m.CheckPasswordAsync(user, dto.Password)).ReturnsAsync(false);
+            userManager.Setup(m => m.AccessFailedAsync(user)).ReturnsAsync(IdentityResult.Success);
+
+            var result = await service.Login(dto);
+
+            Assert.False(result.Success);
+            userManager.Verify(m => m.AccessFailedAsync(user), Times.Once);
         }
 
         [Fact]
