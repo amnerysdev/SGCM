@@ -1,105 +1,34 @@
 import { getSession } from "./api.js";
+import { requestJson } from "./api/http-client.js";
 
 const DOCTORS_URL = "/api/doctors";
 const SPECIALTIES_URL = "/api/specialties";
 
-function getToken() {
-    const session = getSession();
-
-    if (!session) {
-        return null;
-    }
-
-    return (
-        session.jwToken ||
-        session.jwtToken ||
-        session.token ||
-        null
-    );
-}
-
-async function apiFetch(url, options = {}) {
-    const token = getToken();
-
-    if (!token) {
-        throw new Error(
-            "Debes iniciar sesión para consultar el perfil."
-        );
-    }
-
-    const headers = {
-        Authorization: `Bearer ${token}`,
-        ...(options.headers || {})
-    };
-
-    if (options.body) {
-        headers["Content-Type"] = "application/json";
-    }
-
-    const response = await fetch(url, {
-        ...options,
-        headers
-    });
-
-    const payload = await response
-        .json()
-        .catch(() => null);
-
-    if (response.status === 401) {
-        throw new Error(
-            "Tu sesión no es válida o ha expirado."
-        );
-    }
-
-    if (!response.ok || payload?.success === false) {
-        throw new Error(
-            payload?.message ||
-            `No se pudo completar la solicitud (${response.status}).`
-        );
-    }
-
-    return payload;
-}
-
-function unwrap(payload) {
-    if (
-        payload &&
-        Object.prototype.hasOwnProperty.call(
-            payload,
-            "data"
-        )
-    ) {
-        return payload.data;
-    }
-
-    return payload;
-}
-
 const doctorApi = {
     getAll: () =>
-        apiFetch(DOCTORS_URL).then(unwrap),
+        requestJson(DOCTORS_URL, {}, "Debes iniciar sesión para consultar el perfil."),
 
     getById: id =>
-        apiFetch(
+        requestJson(
             `${DOCTORS_URL}/${encodeURIComponent(id)}`
-        ).then(unwrap),
+        ),
 
     getBySpecialty: specialtyId =>
-        apiFetch(
+        requestJson(
             `${DOCTORS_URL}/by-specialty/${encodeURIComponent(specialtyId)}`
-        ).then(unwrap),
+        ),
 
     getCurrent: () =>
-        apiFetch(`${DOCTORS_URL}/me`).then(unwrap),
+        requestJson(`${DOCTORS_URL}/me`, {}, "Debes iniciar sesión para consultar el perfil."),
 
     create: dto =>
-        apiFetch(DOCTORS_URL, {
+        requestJson(DOCTORS_URL, {
             method: "POST",
             body: JSON.stringify(dto)
-        }).then(unwrap),
+        }),
 
     update: (id, dto) =>
-        apiFetch(
+        requestJson(
             `${DOCTORS_URL}/${encodeURIComponent(id)}`,
             {
                 method: "PUT",
@@ -108,10 +37,10 @@ const doctorApi = {
                     id
                 })
             }
-        ).then(unwrap),
+        ),
 
     remove: id =>
-        apiFetch(
+        requestJson(
             `${DOCTORS_URL}/${encodeURIComponent(id)}`,
             {
                 method: "DELETE"
@@ -120,11 +49,11 @@ const doctorApi = {
 };
 
 async function getSpecialty(id) {
-    const payload = await apiFetch(
-        `${SPECIALTIES_URL}/${encodeURIComponent(id)}`
+    return requestJson(
+        `${SPECIALTIES_URL}/${encodeURIComponent(id)}`,
+        {},
+        "Debes iniciar sesión para consultar el perfil."
     );
-
-    return unwrap(payload);
 }
 
 function setText(elementId, value) {

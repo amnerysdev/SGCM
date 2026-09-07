@@ -31,6 +31,9 @@ namespace SGCM.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
+            if (User.IsInRole(AppRoles.Patient) && !await IsCurrentPatient(id))
+                return Forbid();
+
             var result = await _patientService.GetById(id);
             return result.Success ? Ok(result) : NotFound(result);
         }
@@ -57,6 +60,17 @@ namespace SGCM.Controllers
         public async Task<IActionResult> GetBySocialSecurityNumber(
             string socialSecurityNumber)
         {
+            if (User.IsInRole(AppRoles.Patient))
+            {
+                var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var current = string.IsNullOrWhiteSpace(appUserId)
+                    ? null
+                    : await _patientService.GetByAppUserId(appUserId);
+
+                if (current?.Success != true || current.Data is not PatientDto patient || patient.SocialSecurityNumber != socialSecurityNumber)
+                    return Forbid();
+            }
+
             var result = await _patientService
                 .GetBySocialSecurityNumber(socialSecurityNumber);
 
@@ -88,6 +102,9 @@ namespace SGCM.Controllers
             string id,
             [FromBody] UpdatePatientDto dto)
         {
+            if (User.IsInRole(AppRoles.Patient) && !await IsCurrentPatient(id))
+                return Forbid();
+
             dto.Id = id;
 
             var result = await _patientService.Update(dto);
@@ -102,6 +119,15 @@ namespace SGCM.Controllers
             var result = await _patientService.Delete(id);
 
             return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        private async Task<bool> IsCurrentPatient(string patientId)
+        {
+            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(appUserId)) return false;
+
+            var result = await _patientService.GetByAppUserId(appUserId);
+            return result.Success && ((PatientDto)result.Data!).Id == patientId;
         }
     }
 }

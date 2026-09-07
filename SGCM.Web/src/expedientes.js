@@ -1,100 +1,31 @@
 import { getSession } from "./api.js";
+import { requestJson } from "./api/http-client.js";
 
 const RECORDS_URL = "/api/medical-records";
 const DOCTORS_URL = "/api/doctors";
 const PATIENTS_URL = "/api/patients";
 
-function getToken() {
-    const session = getSession();
-
-    if (!session) {
-        return null;
-    }
-
-    return (
-        session.jwToken ||
-        session.jwtToken ||
-        session.token ||
-        null
-    );
-}
-
-async function apiFetch(url, options = {}) {
-    const token = getToken();
-
-    if (!token) {
-        throw new Error(
-            "Debes iniciar sesión para consultar los expedientes."
-        );
-    }
-
-    const headers = {
-        Authorization: `Bearer ${token}`,
-        ...(options.headers || {})
-    };
-
-    if (options.body) {
-        headers["Content-Type"] = "application/json";
-    }
-
-    const response = await fetch(url, {
-        ...options,
-        headers
-    });
-
-    const payload = await response
-        .json()
-        .catch(() => null);
-
-    if (response.status === 401) {
-        throw new Error(
-            "Tu sesión no es válida o ha expirado."
-        );
-    }
-
-    if (!response.ok || payload?.success === false) {
-        throw new Error(
-            payload?.message ||
-            `No se pudo completar la solicitud (${response.status}).`
-        );
-    }
-
-    return payload;
-}
-
-function unwrap(payload) {
-    if (
-        payload &&
-        Object.prototype.hasOwnProperty.call(
-            payload,
-            "data"
-        )
-    ) {
-        return payload.data;
-    }
-
-    return payload;
-}
-
 const recordApi = {
     getByPatient: patientId =>
-        apiFetch(
-            `${RECORDS_URL}/patient/${encodeURIComponent(patientId)}`
-        ).then(unwrap),
+        requestJson(
+            `${RECORDS_URL}/patient/${encodeURIComponent(patientId)}`,
+            {},
+            "Debes iniciar sesión para consultar los expedientes."
+        ),
 
     create: dto =>
-        apiFetch(RECORDS_URL, {
+        requestJson(RECORDS_URL, {
             method: "POST",
             body: JSON.stringify(dto)
-        }).then(unwrap)
+        }, "Debes iniciar sesión para consultar los expedientes.")
 };
 
 function getCurrentDoctor() {
-    return apiFetch(`${DOCTORS_URL}/me`).then(unwrap);
+    return requestJson(`${DOCTORS_URL}/me`, {}, "Debes iniciar sesión para consultar los expedientes.");
 }
 
 function getCurrentPatient() {
-    return apiFetch(`${PATIENTS_URL}/me`).then(unwrap);
+    return requestJson(`${PATIENTS_URL}/me`, {}, "Debes iniciar sesión para consultar los expedientes.");
 }
 
 function showMessage(message, type = "error") {

@@ -1,5 +1,5 @@
 import { serializeLocalDateTime } from './appointment-utils.js'
-import { getSession } from './api.js'
+import { requestJson } from './api/http-client.js'
 
 document.body.classList.add('appointment-confirmation-shell')
 document.querySelector('.app-shell')?.classList.add('appointment-confirmation-shell')
@@ -7,8 +7,7 @@ document.querySelector('.app-shell')?.classList.add('appointment-confirmation-sh
 const form = document.getElementById('booking-form'), specialty = document.getElementById('specialty'), doctor = document.getElementById('doctor'), dateInput = document.getElementById('appointment-date'), reason = document.getElementById('reason'), slots = document.getElementById('slots'), error = document.getElementById('booking-error'), submit = document.getElementById('submit-booking'), selection = document.getElementById('booking-selection'), summary = document.getElementById('slot-summary')
 const steps = [...document.querySelectorAll('.booking-steps li')]
 let patientId = null, doctors = [], selectedSlot = null
-function headers() { const session = getSession(), token = session?.jwToken || session?.jwtToken || session?.token; return token ? { Authorization: `Bearer ${token}` } : {} }
-async function request(url, options = {}) { const response = await fetch(url, { ...options, headers: { ...headers(), 'Content-Type': 'application/json', ...(options.headers || {}) } }), payload = await response.json().catch(() => null); if (response.status === 401) throw new Error('Tu sesión no es válida o ha expirado.'); if (!response.ok || !payload?.success) throw new Error(payload?.message || 'No se pudo completar la operación.'); return payload.data }
+function request(url, options = {}) { return requestJson(url, options, 'Debes iniciar sesión para agendar una cita.') }
 function setError(field, message = '') { document.getElementById(`${field}-error`).textContent = message; document.getElementById(field === 'date' ? 'appointment-date' : field)?.setAttribute('aria-invalid', String(Boolean(message))) }
 function clearFeedback() { error.hidden = true; error.textContent = '' }
 function showError(message) { error.textContent = message; error.hidden = false; error.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) }

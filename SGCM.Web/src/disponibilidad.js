@@ -1,10 +1,4 @@
-import { getSession } from './api.js'
-
-function authHeaders() {
-  const session = getSession()
-  const token = session?.jwToken || session?.jwtToken || session?.token
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
+import { requestJson } from './api/http-client.js'
 
 const days = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const form = document.getElementById('availability-form')
@@ -53,41 +47,8 @@ function formatTime(value) {
   return value.slice(0, 5)
 }
 
-async function request(path, options = {}) {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 10000)
-
-  try {
-    const response = await fetch(`/api/availability${path}`, {
-      ...options,
-      headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(options.headers || {}) },
-      signal: controller.signal,
-    })
-
-    if (response.status === 401) {
-      throw new Error('Tu sesión no es válida o ha expirado.')
-    }
-
-    const body = await response.text()
-    let result
-
-    try {
-      result = body ? JSON.parse(body) : null
-    } catch {
-      throw new Error('El servidor devolvió una respuesta no válida.')
-    }
-
-    if (!response.ok || !result?.success) {
-      throw new Error(result?.message ?? 'No se pudo completar la operación.')
-    }
-    return result.data
-  } catch (error) {
-    if (error.name === 'AbortError') throw new Error('La solicitud tardó demasiado. Intenta nuevamente.')
-    if (error instanceof TypeError) throw new Error('No se pudo conectar con el servidor.')
-    throw error
-  } finally {
-    clearTimeout(timeout)
-  }
+function request(path, options = {}) {
+  return requestJson(`/api/availability${path}`, options, 'Debes iniciar sesión para consultar la disponibilidad.')
 }
 
 async function loadAvailability() {

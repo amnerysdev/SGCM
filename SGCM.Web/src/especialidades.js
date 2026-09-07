@@ -1,117 +1,47 @@
 import { getSession } from "./api.js";
+import { requestJson } from "./api/http-client.js";
 
 const API_URL = "/api/specialties";
 
 let specialties = [];
 
-function getToken() {
-    const session = getSession();
-
-    if (!session) {
-        return null;
-    }
-
-    return (
-        session.jwToken ||
-        session.jwtToken ||
-        session.token ||
-        null
-    );
-}
-
-async function apiFetch(path = "", options = {}) {
-    const token = getToken();
-
-    if (!token) {
-        throw new Error(
-            "Debes iniciar sesión para administrar las especialidades."
-        );
-    }
-
-    const headers = {
-        Authorization: `Bearer ${token}`,
-        ...(options.headers || {})
-    };
-
-    if (options.body) {
-        headers["Content-Type"] = "application/json";
-    }
-
-    const response = await fetch(
-        `${API_URL}${path}`,
-        {
-            ...options,
-            headers
-        }
-    );
-
-    const payload = await response
-        .json()
-        .catch(() => null);
-
-    if (response.status === 401) {
-        throw new Error(
-            "Tu sesión no es válida o ha expirado."
-        );
-    }
-
-    if (!response.ok || payload?.success === false) {
-        throw new Error(
-            payload?.message ||
-            `No se pudo completar la solicitud (${response.status}).`
-        );
-    }
-
-    return payload;
-}
-
-function unwrap(payload) {
-    if (
-        payload &&
-        Object.prototype.hasOwnProperty.call(
-            payload,
-            "data"
-        )
-    ) {
-        return payload.data;
-    }
-
-    return payload;
-}
-
 const specialtyApi = {
     getAll: () =>
-        apiFetch().then(unwrap),
+        requestJson(API_URL, {}, "Debes iniciar sesión para administrar las especialidades."),
 
     getById: id =>
-        apiFetch(
-            `/${encodeURIComponent(id)}`
-        ).then(unwrap),
+        requestJson(
+            `${API_URL}/${encodeURIComponent(id)}`,
+            {},
+            "Debes iniciar sesión para administrar las especialidades."
+        ),
 
     create: dto =>
-        apiFetch("", {
+        requestJson(API_URL, {
             method: "POST",
             body: JSON.stringify(dto)
-        }).then(unwrap),
+        }, "Debes iniciar sesión para administrar las especialidades."),
 
     update: (id, dto) =>
-        apiFetch(
-            `/${encodeURIComponent(id)}`,
+        requestJson(
+            `${API_URL}/${encodeURIComponent(id)}`,
             {
                 method: "PUT",
                 body: JSON.stringify({
                     ...dto,
                     id
                 })
-            }
-        ).then(unwrap),
+            },
+            "Debes iniciar sesión para administrar las especialidades."
+        ),
 
     remove: id =>
-        apiFetch(
-            `/${encodeURIComponent(id)}`,
+        requestJson(
+            `${API_URL}/${encodeURIComponent(id)}`,
             {
                 method: "DELETE"
-            }
+            },
+            "Debes iniciar sesión para administrar las especialidades."
         )
 };
 

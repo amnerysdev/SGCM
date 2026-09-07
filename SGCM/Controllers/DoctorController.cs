@@ -83,6 +83,9 @@ namespace SGCM.Controllers
             string id,
             [FromBody] UpdateDoctorDto dto)
         {
+            if (User.IsInRole(AppRoles.Doctor) && !await IsCurrentDoctor(id))
+                return Forbid();
+
             dto.Id = id;
 
             var result = await _doctorService.Update(dto);
@@ -95,6 +98,15 @@ namespace SGCM.Controllers
         {
             var result = await _doctorService.Delete(id);
             return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        private async Task<bool> IsCurrentDoctor(string doctorId)
+        {
+            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(appUserId)) return false;
+
+            var result = await _doctorService.GetByAppUserId(appUserId);
+            return result.Success && ((DoctorDto)result.Data!).Id == doctorId;
         }
     }
 }

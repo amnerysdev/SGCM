@@ -1,99 +1,28 @@
 import { getSession } from "./api.js";
+import { requestJson } from "./api/http-client.js";
 
 const PATIENTS_URL = "/api/patients";
 
-function getToken() {
-    const session = getSession();
-
-    if (!session) {
-        return null;
-    }
-
-    return (
-        session.jwToken ||
-        session.jwtToken ||
-        session.token ||
-        null
-    );
-}
-
-async function apiFetch(url, options = {}) {
-    const token = getToken();
-
-    if (!token) {
-        throw new Error(
-            "Debes iniciar sesión para consultar el perfil."
-        );
-    }
-
-    const headers = {
-        Authorization: `Bearer ${token}`,
-        ...(options.headers || {})
-    };
-
-    if (options.body) {
-        headers["Content-Type"] = "application/json";
-    }
-
-    const response = await fetch(url, {
-        ...options,
-        headers
-    });
-
-    const payload = await response
-        .json()
-        .catch(() => null);
-
-    if (response.status === 401) {
-        throw new Error(
-            "Tu sesión no es válida o ha expirado."
-        );
-    }
-
-    if (!response.ok || payload?.success === false) {
-        throw new Error(
-            payload?.message ||
-            `No se pudo completar la solicitud (${response.status}).`
-        );
-    }
-
-    return payload;
-}
-
-function unwrap(payload) {
-    if (
-        payload &&
-        Object.prototype.hasOwnProperty.call(
-            payload,
-            "data"
-        )
-    ) {
-        return payload.data;
-    }
-
-    return payload;
-}
-
 const patientApi = {
     getAll: () =>
-        apiFetch(PATIENTS_URL).then(unwrap),
+        requestJson(PATIENTS_URL, {}, "Debes iniciar sesión para consultar el perfil."),
 
     getById: id =>
-        apiFetch(
+        requestJson(
             `${PATIENTS_URL}/${encodeURIComponent(id)}`
-        ).then(unwrap),
+        ),
 
     getCurrent: () =>
-        apiFetch(`${PATIENTS_URL}/me`).then(unwrap),
+        requestJson(`${PATIENTS_URL}/me`, {}, "Debes iniciar sesión para consultar el perfil."),
 
     create: dto =>
-        apiFetch(PATIENTS_URL, {
+        requestJson(PATIENTS_URL, {
             method: "POST",
             body: JSON.stringify(dto)
-        }).then(unwrap),
+        }),
 
     update: (id, dto) =>
-        apiFetch(
+        requestJson(
             `${PATIENTS_URL}/${encodeURIComponent(id)}`,
             {
                 method: "PUT",
@@ -102,10 +31,10 @@ const patientApi = {
                     id
                 })
             }
-        ).then(unwrap),
+        ),
 
     remove: id =>
-        apiFetch(
+        requestJson(
             `${PATIENTS_URL}/${encodeURIComponent(id)}`,
             {
                 method: "DELETE"

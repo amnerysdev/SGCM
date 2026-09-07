@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using SGCM.Application.DTOs.Appointment;
+using SGCM.Application.DTOs.Doctor;
+using SGCM.Application.DTOs.Patient;
 using SGCM.Application.Interfaces;
 using SGCM.Domain.Constants;
 using SGCM.Domain.Core;
@@ -16,11 +18,13 @@ public class AppointmentController : ControllerBase
 {
     private readonly IAppointmentService _appointmentService;
     private readonly IPatientService _patientService;
+    private readonly IDoctorService _doctorService;
 
-    public AppointmentController(IAppointmentService appointmentService, IPatientService patientService)
+    public AppointmentController(IAppointmentService appointmentService, IPatientService patientService, IDoctorService doctorService)
     {
         _appointmentService = appointmentService;
         _patientService = patientService;
+        _doctorService = doctorService;
     }
 
     [HttpGet]
@@ -28,13 +32,32 @@ public class AppointmentController : ControllerBase
     public async Task<IActionResult> GetAll() => ToActionResult(await _appointmentService.GetAll());
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(string id) => ToActionResult(await _appointmentService.GetById(id));
+    public async Task<IActionResult> GetById(string id)
+    {
+        var result = await _appointmentService.GetById(id);
+        if (result.Success && !await CanAccessAppointment((AppointmentDto)result.Data!))
+            return Forbid();
+
+        return ToActionResult(result);
+    }
 
     [HttpGet("patient/{patientId}")]
-    public async Task<IActionResult> GetByPatient(string patientId) => ToActionResult(await _appointmentService.GetByPatient(patientId));
+    public async Task<IActionResult> GetByPatient(string patientId)
+    {
+        if (User.IsInRole(AppRoles.Patient) && !await IsCurrentPatient(patientId))
+            return Forbid();
+
+        return ToActionResult(await _appointmentService.GetByPatient(patientId));
+    }
 
     [HttpGet("doctor/{doctorId}")]
-    public async Task<IActionResult> GetByDoctor(string doctorId) => ToActionResult(await _appointmentService.GetByDoctor(doctorId));
+    public async Task<IActionResult> GetByDoctor(string doctorId)
+    {
+        if (User.IsInRole(AppRoles.Doctor) && !await IsCurrentDoctor(doctorId))
+            return Forbid();
+
+        return ToActionResult(await _appointmentService.GetByDoctor(doctorId));
+    }
 
     [HttpGet("status/{status}")]
     [Authorize(Roles = AppRoles.Admin)]
@@ -66,6 +89,10 @@ public class AppointmentController : ControllerBase
     [Authorize(Roles = AppRoles.Patient + "," + AppRoles.Doctor + "," + AppRoles.Admin)]
     public async Task<IActionResult> Update(string id, [FromBody] UpdateAppointmentDto dto)
     {
+        var existing = await _appointmentService.GetById(id);
+        if (existing.Success && !await CanAccessAppointment((AppointmentDto)existing.Data!))
+            return Forbid();
+
         dto.Id = id;
         return ToActionResult(await _appointmentService.Update(dto));
     }
@@ -74,16 +101,53 @@ public class AppointmentController : ControllerBase
     [Authorize(Roles = AppRoles.Doctor + "," + AppRoles.Admin)]
     public async Task<IActionResult> ChangeStatus(string id, [FromBody] ChangeAppointmentStatusDto dto)
     {
+        var existing = await _appointmentService.GetById(id);
+        if (existing.Success && !await CanAccessAppointment((AppointmentDto)existing.Data!))
+            return Forbid();
+
         dto.Id = id;
         return ToActionResult(await _appointmentService.ChangeStatus(dto));
     }
 
     [HttpPatch("{id}/cancel")]
-    public async Task<IActionResult> Cancel(string id) => ToActionResult(await _appointmentService.ChangeStatus(new ChangeAppointmentStatusDto
+    public async Task<IActionResult> Cancel(string id)
     {
-        Id = id,
-        Status = AppointmentStatus.Canceled
-    }));
+        var existing = await _appointmentService.GetById(id);
+        if (existing.Success && !await CanAccessAppointment((AppointmentDto)existing.Data!))
+            return Forbid();
+
+        return ToActionResult(await _appointmentService.ChangeStatus(new ChangeAppointmentStatusDto
+        {
+            Id = id,
+            Status = AppointmentStatus.Canceled
+        }));
+    }
 
     private IActionResult ToActionResult(OperationResult result) => result.Success ? Ok(result) : BadRequest(result);
+
+    private async Task<bool> CanAccessAppointment(AppointmentDto appointment)
+    {
+        if (User.IsInRole(AppRoles.Admin)) return true;
+        if (User.IsInRole(AppRoles.Patient)) return await IsCurrentPatient(appointment.PatientId);
+        if (User.IsInRole(AppRoles.Doctor)) return await IsCurrentDoctor(appointment.DoctorId);
+        return false;
+    }
+
+    private async Task<bool> IsCurrentPatient(string patientId)
+    {
+        var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(appUserId)) return false;
+
+        var result = await _patientService.GetByAppUserId(appUserId);
+        return result.Success && ((PatientDto)result.Data!).Id == patientId;
+    }
+
+    private async Task<bool> IsCurrentDoctor(string doctorId)
+    {
+        var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(appUserId)) return false;
+
+        var result = await _doctorService.GetByAppUserId(appUserId);
+        return result.Success && ((DoctorDto)result.Data!).Id == doctorId;
+    }
 }
