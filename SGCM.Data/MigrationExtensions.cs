@@ -72,9 +72,9 @@ namespace SGCM.Data
                         await roleManager.CreateAsync(new IdentityRole(role));
                 }
 
-                await CreateTestUserAsync(userManager, "admin@sgcm.com", "Admin123!", "Administrador de Prueba", AppRoles.Admin);
+                await CreateTestUserAsync(userManager, "admin@sgcm.com", "AdminDemo2026!", "Administrador de Prueba", AppRoles.Admin);
 
-                var doctorUser = await CreateTestUserAsync(userManager, "doctor@sgcm.com", "Doctor123!", "Doctor de Prueba", AppRoles.Doctor);
+                var doctorUser = await CreateTestUserAsync(userManager, "doctor@sgcm.com", "DoctorDemo2026!", "Doctor de Prueba", AppRoles.Doctor);
                 if (doctorUser is not null && !context.Doctors.Any(d => d.AppUserId == doctorUser.Id))
                 {
                     var specialty = context.Specialties.FirstOrDefault();
@@ -93,7 +93,7 @@ namespace SGCM.Data
                     });
                 }
 
-                var patientUser = await CreateTestUserAsync(userManager, "patient@sgcm.com", "Patient123!", "Paciente de Prueba", AppRoles.Patient);
+                var patientUser = await CreateTestUserAsync(userManager, "patient@sgcm.com", "PatientDemo2026!", "Paciente de Prueba", AppRoles.Patient);
                 if (patientUser is not null && !context.Patients.Any(p => p.AppUserId == patientUser.Id))
                 {
                     context.Patients.Add(new Patient
