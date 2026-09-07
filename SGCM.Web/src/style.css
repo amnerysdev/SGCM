@@ -1,3 +1,9 @@
+@import './styles/settings/tokens.css';
+@import './styles/base/reset.css';
+@import './styles/base/elements.css';
+@import './styles/components/forms.css';
+@import './styles/components/feedback.css';
+
 :root {
     --primary: #2563eb;
     --primary-dark: #1d4ed8;
@@ -15,15 +21,6 @@
     --warning-text: #92400e;
     --info-bg: #eff6ff;
     --info-text: #1e4fa8;
-}
-
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    color: var(--ink);
-    font-family: Arial, sans-serif;
-    background: var(--canvas);
 }
 
 .container {
@@ -53,19 +50,6 @@ body {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-}
-
-h1, h2, p { margin-top: 0; }
-
-h1 {
-    margin-bottom: 8px;
-    font-size: clamp(1.65rem, 4vw, 2rem);
-    line-height: 1.2;
-}
-
-h2 {
-    margin-bottom: 8px;
-    font-size: 1.1rem;
 }
 
 .lead, .helper-text, .section-description { color: var(--muted); line-height: 1.5; }
@@ -130,26 +114,6 @@ h2 {
 #register-form > button { grid-column: 1 / -1; }
 #register-form > button { margin-top: 4px; }
 
-label {
-    display: block;
-    margin-bottom: 7px;
-    color: #344054;
-    font-size: 0.93rem;
-    font-weight: 700;
-}
-
-input, select {
-    width: 100%;
-    min-height: 46px;
-    padding: 11px 12px;
-    color: var(--ink);
-    font: inherit;
-    background: #fff;
-    border: 1px solid #bfc9d8;
-    border-radius: 8px;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
-}
-
 .input-shell { position: relative; }
 .input-shell input { padding-left: 42px; }
 .input-shell select { padding-left: 42px; }
@@ -200,32 +164,6 @@ input, select {
 .field-error { display: none; margin: 0; color: var(--error-text); font-size: .82rem; line-height: 1.35; }
 .field-error:not(:empty) { display: block; margin-top: 5px; }
 
-input::placeholder { color: #8a96a8; }
-input:focus, select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
-}
-
-button {
-    width: 100%;
-    min-height: 46px;
-    padding: 11px 16px;
-    color: #fff;
-    font: inherit;
-    font-weight: 700;
-    background: var(--primary);
-    border: 1px solid var(--primary);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
-}
-
-button:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
-button:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.3); outline-offset: 2px; }
-button:active { transform: translateY(1px); }
-button:disabled { cursor: wait; opacity: .7; transform: none; }
-
 .button-secondary, .cancel-button {
     color: #334155;
     background: #fff;
@@ -235,19 +173,6 @@ button:disabled { cursor: wait; opacity: .7; transform: none; }
 .cancel-button { color: #b42318; border-color: #fecaca; }
 .cancel-button:hover { color: #991b1b; background: #fff1f2; border-color: #fca5a5; }
 
-.error, .success, .alert {
-    margin: 0 0 18px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 0.93rem;
-    line-height: 1.45;
-}
-.error { color: var(--error-text); background: var(--error-bg); border: 1px solid #fecdd3; }
-.success { color: var(--success-text); background: var(--success-bg); border: 1px solid #bbf7d0; }
-.alert--error { color: var(--error-text); background: var(--error-bg); border: 1px solid #fecdd3; }
-.alert--success { color: var(--success-text); background: var(--success-bg); border: 1px solid #bbf7d0; }
-.alert--warning { color: var(--warning-text); background: var(--warning-bg); border: 1px solid #fde68a; }
-.alert--info { color: var(--info-text); background: var(--info-bg); border: 1px solid #bfdbfe; }
 .success-link {
     display: inline-block;
     margin-top: 6px;
@@ -325,8 +250,6 @@ button:disabled { cursor: wait; opacity: .7; transform: none; }
 .quick-link-card span { display: block; color: var(--muted); font-size: 0.85rem; line-height: 1.4; }
 
 .switch-link { margin: 20px 0 0; color: var(--muted); text-align: center; }
-a { color: var(--primary); font-weight: 700; }
-a:hover { color: var(--primary-dark); }
 #welcome { margin-bottom: 10px; color: var(--muted); }
 
 @media (max-width: 560px) {
