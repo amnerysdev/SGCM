@@ -1,79 +1,6 @@
-import { getSession } from "./api.js";
-import { requestJson } from "./api/http-client.js";
-
-const PATIENTS_URL = "/api/patients";
-
-const patientApi = {
-    getAll: () =>
-        requestJson(PATIENTS_URL, {}, "Debes iniciar sesión para consultar el perfil."),
-
-    getById: id =>
-        requestJson(
-            `${PATIENTS_URL}/${encodeURIComponent(id)}`
-        ),
-
-    getCurrent: () =>
-        requestJson(`${PATIENTS_URL}/me`, {}, "Debes iniciar sesión para consultar el perfil."),
-
-    create: dto =>
-        requestJson(PATIENTS_URL, {
-            method: "POST",
-            body: JSON.stringify(dto)
-        }),
-
-    update: (id, dto) =>
-        requestJson(
-            `${PATIENTS_URL}/${encodeURIComponent(id)}`,
-            {
-                method: "PUT",
-                body: JSON.stringify({
-                    ...dto,
-                    id
-                })
-            }
-        ),
-
-    remove: id =>
-        requestJson(
-            `${PATIENTS_URL}/${encodeURIComponent(id)}`,
-            {
-                method: "DELETE"
-            }
-        )
-};
-
-function setText(elementId, value) {
-    const element = document.getElementById(elementId);
-
-    if (!element) {
-        return;
-    }
-
-    element.textContent = value || "No disponible";
-    element.classList.remove("loading");
-}
-
-function showMessage(message, type = "error") {
-    const element = document.getElementById(
-        "profile-message"
-    );
-
-    if (!element) {
-        return;
-    }
-
-    element.textContent = message;
-    element.className = `message visible ${type}`;
-}
-
-function calculateInitials(name) {
-    return name
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(part => part[0].toUpperCase())
-        .join("");
-}
+import { getSession } from "./shared/session.js";
+import { createPatient, deletePatient, getAllPatients, getCurrentPatient, getPatientById, updatePatient } from "./api/patients-api.js";
+import { calculateInitials, setProfileText, setupProfileRetry, showProfileMessage } from "./components/profile-view.js";
 
 function formatDate(value) {
     if (!value) {
@@ -105,7 +32,7 @@ async function loadPatientProfile() {
             );
         }
 
-        const patient = await patientApi.getCurrent();
+        const patient = await getCurrentPatient();
 
         const fullName =
             session.fullName || "Paciente";
@@ -113,29 +40,29 @@ async function loadPatientProfile() {
         const email =
             session.email || "No disponible";
 
-        setText("patient-name", fullName);
-        setText("patient-email", email);
-        setText(
+        setProfileText("patient-name", fullName);
+        setProfileText("patient-email", email);
+        setProfileText(
             "patient-ssn",
             patient.socialSecurityNumber
         );
-        setText(
+        setProfileText(
             "patient-dob",
             formatDate(patient.dateOfBirth)
         );
-        setText("patient-address", patient.address);
-        setText("patient-id", patient.id);
-        setText(
+        setProfileText("patient-address", patient.address);
+        setProfileText("patient-id", patient.id);
+        setProfileText(
             "patient-initials",
             calculateInitials(fullName) || "PA"
         );
 
-        showMessage(
+        showProfileMessage(
             "Perfil cargado correctamente.",
             "success"
         );
     } catch (error) {
-        showMessage(
+        showProfileMessage(
             error.message ||
             "No se pudo cargar el perfil del paciente."
         );
@@ -146,7 +73,14 @@ async function loadPatientProfile() {
     }
 }
 
-window.sgcmPatients = patientApi;
+window.sgcmPatients = {
+    getAll: getAllPatients,
+    getById: getPatientById,
+    getCurrent: getCurrentPatient,
+    create: createPatient,
+    update: updatePatient,
+    remove: deletePatient
+};
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -158,12 +92,7 @@ document.addEventListener(
             return;
         }
 
-        document
-            .getElementById("retry-profile")
-            ?.addEventListener(
-                "click",
-                loadPatientProfile
-            );
+        setupProfileRetry(loadPatientProfile);
 
         loadPatientProfile();
     }

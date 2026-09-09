@@ -1,4 +1,4 @@
-import { resetPassword } from './api.js'
+import { resetPassword } from './api/account-api.js'
 import { setFieldError, setLoading, setupPasswordToggle, showAlert, validatePassword } from './auth-form.js'
 
 const form = document.getElementById('reset-password-form')

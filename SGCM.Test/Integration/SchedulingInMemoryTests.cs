@@ -4,7 +4,7 @@ using SGCM.Application.DTOs.Appointment;
 using SGCM.Application.DTOs.Availability;
 using SGCM.Application.Services;
 using SGCM.Data.Context;
-using SGCM.Data.Interfaces;
+using SGCM.Application.Abstractions;
 using SGCM.Data.Repositories;
 using SGCM.Domain.Entities;
 using SGCM.Domain.Enums;

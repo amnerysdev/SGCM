@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SGCM.Data.Context;
 using SGCM.Domain.Constants;
 using SGCM.Domain.Entities;
@@ -9,13 +10,13 @@ namespace SGCM.Data.Seeding;
 
 public sealed class DevelopmentDataSeeder
 {
-    public async Task SeedAsync(SgcmDbContext context, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+    public async Task SeedAsync(SgcmDbContext context, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ILogger? logger = null)
     {
         if (!context.Database.IsInMemory() && Environment.GetEnvironmentVariable("RUN_SEED") != "true") return;
 
         try
         {
-            Console.WriteLine("Sembrando datos de prueba.");
+            logger?.LogInformation("Sembrando datos de prueba.");
 
             foreach (var role in AppRoles.All)
             {
@@ -23,9 +24,9 @@ public sealed class DevelopmentDataSeeder
                     await roleManager.CreateAsync(new IdentityRole(role));
             }
 
-            await CreateTestUserAsync(userManager, "admin@sgcm.com", "AdminDemo2026!", "Administrador de Prueba", AppRoles.Admin);
+            await CreateTestUserAsync(userManager, "admin@sgcm.com", "AdminDemo2026!", "Administrador de Prueba", AppRoles.Admin, logger);
 
-            var doctorUser = await CreateTestUserAsync(userManager, "doctor@sgcm.com", "DoctorDemo2026!", "Doctor de Prueba", AppRoles.Doctor);
+            var doctorUser = await CreateTestUserAsync(userManager, "doctor@sgcm.com", "DoctorDemo2026!", "Doctor de Prueba", AppRoles.Doctor, logger);
             if (doctorUser is not null && !context.Doctors.Any(d => d.AppUserId == doctorUser.Id))
             {
                 var specialty = context.Specialties.FirstOrDefault();
@@ -44,7 +45,7 @@ public sealed class DevelopmentDataSeeder
                 });
             }
 
-            var patientUser = await CreateTestUserAsync(userManager, "patient@sgcm.com", "PatientDemo2026!", "Paciente de Prueba", AppRoles.Patient);
+            var patientUser = await CreateTestUserAsync(userManager, "patient@sgcm.com", "PatientDemo2026!", "Paciente de Prueba", AppRoles.Patient, logger);
             if (patientUser is not null && !context.Patients.Any(p => p.AppUserId == patientUser.Id))
             {
                 context.Patients.Add(new Patient
@@ -57,18 +58,18 @@ public sealed class DevelopmentDataSeeder
             }
 
             await context.SaveChangesAsync();
-            await SeedRealisticTestDataAsync(context, userManager);
+            await SeedRealisticTestDataAsync(context, userManager, logger);
 
-            Console.WriteLine("Datos de prueba sembrados con exito.");
+            logger?.LogInformation("Datos de prueba sembrados con exito.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al sembrar datos de prueba: {ex.Message}");
+            logger?.LogError(ex, "Error al sembrar datos de prueba: {Message}", ex.Message);
         }
     }
 
     private static async Task<AppUser?> CreateTestUserAsync(
-        UserManager<AppUser> userManager, string email, string password, string fullName, string role)
+        UserManager<AppUser> userManager, string email, string password, string fullName, string role, ILogger? logger = null)
     {
         var existing = await userManager.FindByEmailAsync(email);
         if (existing is not null) return existing;
@@ -85,7 +86,7 @@ public sealed class DevelopmentDataSeeder
         var result = await userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {
-            Console.WriteLine($"No se pudo crear el usuario de prueba {email}: {string.Join(" ", result.Errors.Select(e => e.Description))}");
+            logger?.LogWarning("No se pudo crear el usuario de prueba {Email}: {Errors}", email, string.Join(" ", result.Errors.Select(e => e.Description)));
             return null;
         }
 
@@ -93,7 +94,7 @@ public sealed class DevelopmentDataSeeder
         return user;
     }
 
-    private static async Task SeedRealisticTestDataAsync(SgcmDbContext context, UserManager<AppUser> userManager)
+    private static async Task SeedRealisticTestDataAsync(SgcmDbContext context, UserManager<AppUser> userManager, ILogger? logger = null)
     {
         var specialties = new[]
         {
@@ -124,7 +125,7 @@ public sealed class DevelopmentDataSeeder
         };
         foreach (var (fullName, email, phone, license, specialty) in doctors)
         {
-            var user = await CreateTestUserAsync(userManager, email, $"Fictitious-{Guid.NewGuid():N}-Aa!", fullName, AppRoles.Doctor);
+            var user = await CreateTestUserAsync(userManager, email, $"Fictitious-{Guid.NewGuid():N}-Aa!", fullName, AppRoles.Doctor, logger);
             if (user is not null && !await context.Doctors.AnyAsync(d => d.AppUserId == user.Id))
                 context.Doctors.Add(new Doctor { AppUserId = user.Id, MedicalLicense = license, SpecialtyId = specialtyByName[specialty] });
             if (user is not null) { user.PhoneNumber = phone; await userManager.UpdateAsync(user); }
@@ -138,7 +139,7 @@ public sealed class DevelopmentDataSeeder
         };
         foreach (var (fullName, email, phone) in administrators)
         {
-            var user = await CreateTestUserAsync(userManager, email, $"Fictitious-{Guid.NewGuid():N}-Aa!", fullName, AppRoles.Admin);
+            var user = await CreateTestUserAsync(userManager, email, $"Fictitious-{Guid.NewGuid():N}-Aa!", fullName, AppRoles.Admin, logger);
             if (user is not null) { user.PhoneNumber = phone; await userManager.UpdateAsync(user); }
         }
 
@@ -155,7 +156,7 @@ public sealed class DevelopmentDataSeeder
         };
         foreach (var (fullName, email, phone, socialSecurityNumber, birthDate, address) in patients)
         {
-            var user = await CreateTestUserAsync(userManager, email, "PacienteDemo2026!", fullName, AppRoles.Patient);
+            var user = await CreateTestUserAsync(userManager, email, "PacienteDemo2026!", fullName, AppRoles.Patient, logger);
             if (user is not null && !await context.Patients.AnyAsync(p => p.AppUserId == user.Id))
                 context.Patients.Add(new Patient { AppUserId = user.Id, SocialSecurityNumber = socialSecurityNumber, DateOfBirth = birthDate, Address = address });
             if (user is not null) { user.PhoneNumber = phone; await userManager.UpdateAsync(user); }

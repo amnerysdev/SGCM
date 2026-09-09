@@ -1,4 +1,4 @@
-import { requestJson } from './api/http-client.js'
+import { createAvailability, deleteAvailability, getDoctorAvailability } from './api/availability-api.js'
 
 const days = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const form = document.getElementById('availability-form')
@@ -47,16 +47,12 @@ function formatTime(value) {
   return value.slice(0, 5)
 }
 
-function request(path, options = {}) {
-  return requestJson(`/api/availability${path}`, options, 'Debes iniciar sesión para consultar la disponibilidad.')
-}
-
 async function loadAvailability() {
   const doctorId = doctorIdInput.value.trim()
   if (!doctorId) return
 
   try {
-    const availabilities = await request(`/doctor/${encodeURIComponent(doctorId)}`)
+    const availabilities = await getDoctorAvailability(doctorId)
     list.replaceChildren()
     if (!availabilities.length) {
       const empty = document.createElement('p')
@@ -81,7 +77,7 @@ async function loadAvailability() {
         remove.addEventListener('click', async () => {
           if (!confirm('¿Eliminar este bloque de horario?')) return
           try {
-            await request(`/${availability.id}`, { method: 'DELETE' })
+            await deleteAvailability(availability.id)
             show(messageEl, 'Horario eliminado.')
             await loadAvailability()
           } catch (error) {
@@ -109,7 +105,7 @@ form.addEventListener('submit', async (event) => {
   }
 
   try {
-    await request('', { method: 'POST', body: JSON.stringify(dto) })
+    await createAvailability(dto)
     form.reset()
     show(messageEl, 'La disponibilidad se registró correctamente y ya está lista para su uso en la agenda.', false)
     await loadAvailability()

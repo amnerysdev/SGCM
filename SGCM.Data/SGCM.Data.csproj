@@ -20,8 +20,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SGCM.Domain\SGCM.Domain.csproj" />
+    <ProjectReference Include="..\SGCM.Application\SGCM.Application.csproj" />
     <Folder Include="Context\" />
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 
 </Project>

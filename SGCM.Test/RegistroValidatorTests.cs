@@ -1,5 +1,5 @@
 using Xunit;
-using SGCM.Data.Validation;
+using SGCM.Application.Validation;
 
 namespace SGCM.Test;
 

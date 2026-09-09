@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SGCM.Data.Context;
 using SGCM.Data.Seeding;
 using SGCM.Domain.Entities;
@@ -13,6 +14,7 @@ public static class MigrationExtensions
     public static void ApplyMigrations(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
+        var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("SGCM.Data.Migrations");
         using var context = scope.ServiceProvider.GetRequiredService<SgcmDbContext>();
 
         if (!context.Database.IsInMemory() && Environment.GetEnvironmentVariable("RUN_MIGRATIONS") != "true")
@@ -22,20 +24,20 @@ public static class MigrationExtensions
         {
             if (context.Database.IsInMemory())
             {
-                Console.WriteLine("Inicializando base de datos en memoria.");
+                logger.LogInformation("Inicializando base de datos en memoria.");
                 context.Database.EnsureCreated();
             }
             else
             {
-                Console.WriteLine("Aplicando migraciones.");
+                logger.LogInformation("Aplicando migraciones.");
                 context.Database.Migrate();
             }
 
-            Console.WriteLine("Base de datos lista.");
+            logger.LogInformation("Base de datos lista.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al preparar la base de datos: {ex.Message}");
+            logger.LogError(ex, "Error al preparar la base de datos: {Message}", ex.Message);
         }
     }
 
@@ -43,10 +45,11 @@ public static class MigrationExtensions
     {
         using var scope = app.ApplicationServices.CreateScope();
         var services = scope.ServiceProvider;
+        var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("SGCM.Data.Seeding");
         var context = services.GetRequiredService<SgcmDbContext>();
         var userManager = services.GetRequiredService<UserManager<AppUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        await new DevelopmentDataSeeder().SeedAsync(context, userManager, roleManager);
+        await new DevelopmentDataSeeder().SeedAsync(context, userManager, roleManager, logger);
     }
 }

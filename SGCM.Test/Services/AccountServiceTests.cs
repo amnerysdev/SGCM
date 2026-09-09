@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using SGCM.Application.DTOs.Account;
 using SGCM.Application.Services;
-using SGCM.Data.Interfaces;
+using SGCM.Application.Abstractions;
 using SGCM.Domain.Constants;
 using SGCM.Domain.Entities;
 using SGCM.Domain.Settings;

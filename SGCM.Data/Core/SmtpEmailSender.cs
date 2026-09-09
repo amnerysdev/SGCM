@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Options;
-using SGCM.Data.Interfaces;
+using SGCM.Application.Abstractions;
 using SGCM.Domain.Settings;
 
 namespace SGCM.Data.Core

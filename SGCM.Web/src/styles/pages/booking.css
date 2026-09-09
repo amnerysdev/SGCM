@@ -1,0 +1,143 @@
+/* Appointment booking: native section of the protected application shell. */
+.booking-page { width: min(100%, 1080px); padding: clamp(26px, 4vw, 48px); margin: 0 auto; }
+.booking-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }.booking-heading .eyebrow { color: #087cac; }.booking-heading h1 { margin: 0 0 7px; color: #102a56; font-size: clamp(1.75rem, 3vw, 2.3rem); letter-spacing: -.035em; }.booking-heading p:not(.eyebrow) { margin: 0; color: #63748b; line-height: 1.5; }.booking-history-link { display: inline-flex; gap: 8px; align-items: center; color: #0575b4; font-size: .88rem; text-decoration: none; white-space: nowrap; }.booking-history-link:hover { color: #034e81; text-decoration: underline; }
+.booking-steps { display: grid; grid-template-columns: repeat(3, 1fr); max-width: 640px; padding: 0; margin: 0 0 25px; list-style: none; }.booking-steps li { display: flex; align-items: center; gap: 8px; color: #8290a4; font-size: .78rem; }.booking-steps li::after { width: 100%; height: 1px; margin-left: 4px; background: #dce6ef; content: ''; }.booking-steps li:last-child::after { display: none; }.booking-steps span { display: grid; width: 24px; height: 24px; place-items: center; color: #738298; background: #e9eef4; border-radius: 50%; font-size: .72rem; font-weight: 800; }.booking-steps .is-active span, .booking-steps .is-complete span { color: #fff; background: #087cac; }.booking-steps .is-active, .booking-steps .is-complete { color: #1d5576; }
+.booking-panel { padding: clamp(20px, 3vw, 28px); margin-bottom: 16px; background: #fff; border: 1px solid #e2eaf4; border-radius: 16px; box-shadow: 0 5px 16px rgba(36,65,104,.04); }.booking-panel-heading { display: flex; gap: 13px; align-items: flex-start; margin-bottom: 22px; }.booking-panel-number { display: grid; flex: 0 0 29px; width: 29px; height: 29px; place-items: center; color: #0874aa; background: #e6f7fc; border-radius: 9px; font-size: .8rem; font-weight: 800; }.booking-panel h2 { margin: 1px 0 4px; color: #16335f; font-size: 1.06rem; }.booking-panel-heading p { margin: 0; color: #718198; font-size: .85rem; line-height: 1.45; }.booking-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }.booking-fields--date { grid-template-columns: minmax(210px, .7fr) minmax(0, 1.3fr); align-items: start; }.booking-panel select, .booking-panel input, .booking-panel textarea { border-color: #d8e4ef; border-radius: 9px; box-shadow: none; }.booking-panel select:focus, .booking-panel input:focus, .booking-panel textarea:focus { border-color: #4aafcf; box-shadow: 0 0 0 3px rgba(74,175,207,.16); }.booking-panel select:disabled, .booking-panel input:disabled { color: #8795a7; background: #f5f8fb; cursor: not-allowed; }.field[aria-invalid='true'] { border-color: #e88b9a; }.field-meta { display: flex; justify-content: space-between; margin-top: 6px; color: #7a899b; font-size: .74rem; }.booking-slot-summary { min-height: 44px; padding: 12px 14px; color: #547088; background: #f4f9fb; border: 1px solid #d9edf2; border-radius: 9px; font-size: .83rem; line-height: 1.45; }.booking-slots { margin-top: 16px; }.booking-slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 9px; }.booking-slot { min-height: 43px; color: #0b6391; background: #f0f9fc; border-color: #bfe3ed; border-radius: 9px; font-size: .85rem; }.booking-slot:hover { color: #075478; background: #dff4f9; border-color: #71bfd3; }.booking-slot.is-selected, .booking-slot.is-selected:hover { color: #fff; background: #087cac; border-color: #087cac; box-shadow: 0 3px 8px rgba(8,124,172,.2); }.booking-empty { padding: 16px; margin: 0; color: #667c92; background: #f7fafc; border: 1px dashed #ccdae6; border-radius: 9px; font-size: .85rem; text-align: center; }.booking-actions { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 20px 0 4px; }.booking-actions button { width: auto; min-width: 178px; color: #fff; background: #087cac; border-color: #087cac; }.booking-actions button:hover:not(:disabled) { background: #066890; border-color: #066890; }.booking-selection { margin: 0; color: #536e87; font-size: .86rem; font-weight: 700; }.booking-confirmation { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; padding: 24px; margin-bottom: 18px; color: #266549; background: #f1fbf6; border: 1px solid #c9edda; border-radius: 16px; }.confirmation-icon { display: grid; width: 42px; height: 42px; place-items: center; color: #fff; background: #22956a; border-radius: 50%; font-size: 1.3rem; font-weight: 800; }.booking-confirmation h2 { margin: 0 0 6px; color: #215d42; font-size: 1.15rem; }.booking-confirmation p:not(.eyebrow) { margin-bottom: 18px; color: #4a7962; }.booking-confirmation .eyebrow { margin-bottom: 5px; color: #278558; }.booking-confirmation dl { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin: 0 0 18px; }.booking-confirmation dl div { padding: 10px; background: rgba(255,255,255,.65); border-radius: 8px; }.booking-confirmation dt { margin-bottom: 3px; color: #65927c; font-size: .7rem; font-weight: 700; }.booking-confirmation dd { margin: 0; color: #255a43; font-size: .82rem; font-weight: 700; line-height: 1.35; }.booking-confirmation a { color: #087a50; font-size: .85rem; }
+@media (max-width: 640px) { .booking-page { padding: 24px 16px; }.booking-heading { align-items: flex-start; flex-direction: column; gap: 12px; margin-bottom: 22px; }.booking-steps strong { display: none; }.booking-steps { max-width: 100%; }.booking-fields, .booking-fields--date { grid-template-columns: 1fr; gap: 12px; }.booking-panel { padding: 20px 17px; }.booking-actions { align-items: stretch; flex-direction: column; }.booking-actions button { width: 100%; }.booking-selection { order: 2; text-align: center; }.booking-slot-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }.booking-confirmation { grid-template-columns: 1fr; }.confirmation-icon { margin: 0 auto; }.booking-confirmation dl { grid-template-columns: 1fr; } }
+
+/* Structural alignment for the booking workflow. Both schedule columns use the
+   same field anatomy: label, control and contextual feedback. */
+.booking-steps { width: 100%; max-width: none; }
+.booking-steps li { min-width: 0; }
+.booking-steps li::after { flex: 1 1 auto; }
+.booking-fields--date { align-items: start; }
+.booking-fields--date > .field { display: grid; grid-template-rows: auto auto minmax(0, 1fr); align-content: start; gap: 0; }
+.booking-fields--date label, .field-label { display: block; min-height: 20px; margin: 0 0 7px; color: #344c68; font-size: .84rem; font-weight: 700; line-height: 1.45; }
+.field-label { padding: 0; }
+.booking-slot-summary { display: flex; align-items: center; min-height: 44px; }
+.booking-reason-field { width: 100%; }
+.booking-reason-field textarea { display: block; width: 100%; min-height: 128px; padding: 14px; color: var(--ink); background: #fff; border: 1px solid #d8e4ef; border-radius: 9px; font: inherit; line-height: 1.5; resize: vertical; transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease; }
+.booking-reason-field textarea::placeholder { color: #8493a5; opacity: 1; }
+.booking-reason-field textarea:hover:not(:disabled) { border-color: #a9c9d7; }
+.booking-reason-field textarea:disabled { color: #8795a7; background: #f5f8fb; cursor: not-allowed; }
+.booking-reason-field textarea[aria-invalid='true'] { border-color: #e88b9a; box-shadow: 0 0 0 3px rgba(232,139,154,.12); }
+@media (max-width: 640px) { .booking-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }.booking-steps li { gap: 6px; justify-content: center; }.booking-steps li::after { margin-left: 2px; }.booking-availability { margin-top: 0; }.booking-reason-field { max-width: none; } }
+
+/* Progress follows the reference structure: indicators above labels and
+   connectors made by the grid itself, without positioned layout elements. */
+.booking-steps { display: grid; width: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 240px; gap: 0; margin: 0 0 30px; }
+.booking-steps li { display: grid; grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr); grid-template-rows: 42px auto; align-items: center; color: #718198; font-size: .82rem; text-align: center; }
+.booking-steps li > span { grid-column: 2; grid-row: 1; z-index: 1; width: 42px; height: 42px; color: #688096; background: #fff; border: 2px solid #c8d4e0; border-radius: 50%; font-size: .95rem; }
+.booking-steps strong { display: block; grid-column: 1 / -1; grid-row: 2; padding-top: 9px; color: inherit; font-weight: 700; line-height: 1.3; }
+.booking-steps li::before, .booking-steps li::after { display: none; align-self: center; height: 2px; margin: 0; background: #dce6ef; content: ''; }
+.booking-steps li:not(:first-child)::before { display: block; grid-column: 1; grid-row: 1; }
+.booking-steps li:not(:last-child)::after { display: block; grid-column: 3; grid-row: 1; }
+.booking-steps .is-current { color: #087cac; }
+.booking-steps .is-current > span { color: #fff; background: #087cac; border-color: #087cac; box-shadow: 0 0 0 5px rgba(8,124,172,.12); }
+.booking-steps .is-complete { color: #26745b; }
+.booking-steps .is-complete > span { color: #fff; background: #22956a; border-color: #22956a; }
+.booking-steps .is-complete::after, .booking-steps .is-complete + li::before { background: #69bb98; }
+.booking-confirmation { border-left: 4px solid #22956a; }
+.booking-confirmation .confirmation-status { max-width: 62ch; margin-bottom: 18px; color: #396e55; font-weight: 600; }
+@media (max-width: 640px) { .booking-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; margin-bottom: 24px; }.booking-steps li { grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr); grid-template-rows: 34px auto; font-size: .72rem; }.booking-steps li > span { width: 34px; height: 34px; font-size: .82rem; }.booking-steps strong { display: block; padding-top: 7px; }.booking-steps li::before, .booking-steps li::after { height: 2px; } }
+
+/* Appointment confirmation — visual reconstruction of the patient success view. */
+.appointment-confirmation-shell { --booking-navy: #0c2b62; --booking-blue: #0088c8; --booking-green: #009a52; --booking-pale-green: #e9f8f0; background: #fbfcff; }
+.appointment-confirmation-shell .booking-page { width: min(100%, 1120px); padding: 30px 30px 34px; }
+.appointment-confirmation-shell .booking-heading { margin-bottom: 23px; }
+.appointment-confirmation-shell .booking-heading .eyebrow { margin-bottom: 10px; color: var(--booking-blue); font-size: .85rem; letter-spacing: .07em; }
+.appointment-confirmation-shell .booking-heading h1 { margin-bottom: 10px; color: var(--booking-navy); font-size: clamp(2rem, 3vw, 2.45rem); font-weight: 800; letter-spacing: -.035em; }
+.appointment-confirmation-shell .booking-heading p:not(.eyebrow) { color: #304d80; font-size: 1.01rem; }
+.appointment-confirmation-shell .booking-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1164px; margin: 0 0 33px; }
+.appointment-confirmation-shell .booking-steps li { color: #35527f; font-size: .84rem; }
+.appointment-confirmation-shell .booking-steps li > span { width: 46px; height: 46px; color: #fff; background: #009657; border: 0; box-shadow: none; font-size: 1.06rem; }
+.appointment-confirmation-shell .booking-steps li::before, .appointment-confirmation-shell .booking-steps li::after { height: 2px; background: #0ba365; }
+.appointment-confirmation-shell .booking-steps .is-current { color: #009657; }
+.appointment-confirmation-shell .booking-steps .is-current > span { background: #009657; box-shadow: 0 0 0 5px #d7f3e5, 0 0 0 8px #b8e8d2; }
+.appointment-confirmation-shell .booking-steps .is-complete { color: #35527f; }
+.appointment-confirmation-shell .booking-steps .is-complete > span { background: #009657; }
+.appointment-confirmation-shell .booking-confirmation { display: block; padding: 0; margin: 0; color: inherit; background: transparent; border: 0; border-radius: 0; }
+.confirmation-success { position: relative; display: flex; flex-direction: column; align-items: center; padding: 10px 0 32px; text-align: center; }
+.confirmation-icon { position: relative; z-index: 1; display: grid; width: 76px; height: 76px; place-items: center; margin-bottom: 18px; color: #fff; background: var(--booking-green); border-radius: 50%; box-shadow: 0 3px 8px rgba(24, 122, 90, .12); }
+.confirmation-icon svg { width: 36px; height: 36px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3; }
+.confirmation-burst { position: absolute; top: -22px; left: 50%; width: 220px; height: 130px; transform: translateX(-50%); }
+.confirmation-burst i { position: absolute; width: 7px; height: 7px; background: #64c9a3; border-radius: 50%; }
+.confirmation-burst i:nth-child(1) { top: 26px; left: 8px; background: #7fb8e6; }.confirmation-burst i:nth-child(2) { top: 2px; left: 66px; width: 9px; height: 9px; background: #4c8fce; }.confirmation-burst i:nth-child(3) { top: 24px; right: 14px; background: #4fae82; }.confirmation-burst i:nth-child(4) { top: 60px; left: 52px; width: 9px; height: 9px; background: #4c8fce; }.confirmation-burst i:nth-child(5) { top: 58px; right: 40px; background: #4c8fce; }.confirmation-burst i:nth-child(6) { top: 8px; right: 62px; width: 9px; height: 9px; background: #4fae82; }.confirmation-burst i:nth-child(7) { top: 44px; left: 0; width: 6px; height: 6px; background: #4fae82; }.confirmation-burst i:nth-child(8) { top: 42px; right: 0; width: 6px; height: 6px; background: #4c8fce; }.confirmation-burst i:nth-child(9) { top: 90px; left: 82px; width: 8px; height: 8px; background: #4fae82; }.confirmation-burst i:nth-child(10) { top: 84px; right: 84px; width: 8px; height: 8px; background: #7fb8e6; }.confirmation-burst i::after { position: absolute; width: 10px; height: 2.5px; background: currentColor; border-radius: 2px; content: ''; transform: rotate(90deg); }.confirmation-burst i:nth-child(2), .confirmation-burst i:nth-child(5), .confirmation-burst i:nth-child(8) { color: #4c8fce; border-radius: 0; transform: rotate(45deg); }.confirmation-burst i:nth-child(2)::after, .confirmation-burst i:nth-child(5)::after, .confirmation-burst i:nth-child(8)::after { left: -4px; top: 4px; }.confirmation-burst i:nth-child(3), .confirmation-burst i:nth-child(7) { color: #4fae82; }.confirmation-burst i:nth-child(3)::after, .confirmation-burst i:nth-child(7)::after { left: -1.5px; top: 2.5px; }
+.confirmation-success h2 { margin: 0 0 8px; color: var(--booking-green); font-size: 1.5rem; font-weight: 800; line-height: 1.25; letter-spacing: -.015em; }
+.confirmation-success p { margin: 0; color: #5b6b7d; font-size: .95rem; line-height: 1.5; }
+.appointment-details { width: min(100%, 1064px); margin: 0 auto; }
+.appointment-details-heading { display: grid; grid-template-columns: 1fr auto 1fr; gap: 30px; align-items: center; margin-bottom: 20px; }
+.appointment-details-heading > span { height: 1px; background: #cad7e8; }
+.appointment-details-heading h3 { display: flex; align-items: center; gap: 14px; margin: 0; color: var(--booking-navy); font-size: 1.25rem; }
+.appointment-details-heading h3 svg { width: 28px; height: 28px; fill: none; stroke: #009957; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.3; }
+.appointment-details-card { display: grid; grid-template-columns: repeat(3, 1fr); min-height: 227px; padding: 27px 18px; margin: 0; background: #fff; border: 1px solid #eef1f6; border-radius: 12px; box-shadow: 0 10px 25px rgba(29, 57, 94, .11); }
+.appointment-detail { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; padding: 0 24px; text-align: center; }
+.appointment-detail + .appointment-detail { border-left: 1px solid #d8e1ee; }
+.appointment-detail-icon { display: grid; width: 72px; height: 72px; place-items: center; margin-bottom: 14px; color: #009957; background: var(--booking-pale-green); border-radius: 50%; }
+.appointment-detail-icon svg { width: 32px; height: 32px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+.appointment-detail dt { margin-bottom: 8px; color: #46618b; font-size: .72rem; font-weight: 800; letter-spacing: .025em; text-transform: uppercase; }
+.appointment-detail dd { margin: 0; color: #09255c; font-size: 1rem; font-weight: 800; line-height: 1.35; }
+.appointment-detail time { display: flex; align-items: center; gap: 10px; margin-top: 11px; color: #009957; font-size: .98rem; font-weight: 800; }
+.appointment-detail time svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.2; }
+.appointment-status-link { display: flex; width: min(100%, 408px); min-height: 58px; align-items: center; justify-content: center; gap: 14px; margin: 27px auto 0; color: #009957; background: #fff; border: 1.5px solid #009957; border-radius: 8px; font-size: 1rem; font-weight: 800; text-decoration: none; }
+.appointment-status-link:hover { color: #007a45; background: #f0fbf5; }
+.appointment-status-link svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.2; }
+@media (max-width: 720px) { .appointment-confirmation-shell .booking-page { padding: 25px 18px; }.appointment-confirmation-shell .booking-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }.appointment-details-card { grid-template-columns: 1fr; padding: 8px 20px; }.appointment-detail { min-height: 190px; padding: 22px 0; }.appointment-detail + .appointment-detail { border-top: 1px solid #d8e1ee; border-left: 0; }.appointment-details-heading { gap: 12px; }.appointment-details-heading h3 { gap: 8px; font-size: 1.05rem; white-space: nowrap; }.appointment-details-heading h3 svg { width: 23px; height: 23px; }.confirmation-success { padding-bottom: 25px; } }
+
+/* Appointment confirmation: imported layout, scoped to the completed state. */
+.appointment-confirmation-shell .booking-page.is-confirmed { width: min(900px, calc(100% - 48px)); padding: 40px 56px 56px; margin: 48px auto; background: #fff; border-radius: 16px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-heading { margin-bottom: 40px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-heading .eyebrow { margin: 0 0 8px; color: #2f7ed8; font-size: 13px; font-weight: 700; letter-spacing: .06em; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-heading h1 { margin: 0 0 10px; color: #16244a; font-size: 34px; font-weight: 800; letter-spacing: normal; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-heading p:not(.eyebrow) { margin: 0; color: #6b7280; font-size: 15px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-steps { margin-bottom: 48px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-steps li > span { width: 40px; height: 40px; background: #1f9d55; box-shadow: 0 0 0 6px rgba(31, 157, 85, .12); font-size: 16px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-steps li, .appointment-confirmation-shell .booking-page.is-confirmed .booking-steps .is-complete { color: #17803d; font-size: 13px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-steps strong { padding-top: 10px; font-weight: 600; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-steps li::before, .appointment-confirmation-shell .booking-page.is-confirmed .booking-steps li::after { background: #1f9d55; }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-steps .is-current > span { background: #1f9d55; box-shadow: 0 0 0 6px rgba(31, 157, 85, .12); }
+.appointment-confirmation-shell .booking-page.is-confirmed .booking-confirmation { margin: 0; }
+.appointment-confirmation-shell .booking-page.is-confirmed .confirmation-success { padding: 8px 0 40px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .confirmation-icon { width: 72px; height: 72px; margin-bottom: 18px; background: #1f9d55; box-shadow: none; }
+.appointment-confirmation-shell .booking-page.is-confirmed .confirmation-icon svg { width: 34px; height: 34px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .confirmation-burst { top: -4px; width: 96px; height: 96px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .confirmation-success h2 { margin: 0 0 8px; color: #17803d; font-size: 24px; font-weight: 800; letter-spacing: normal; }
+.appointment-confirmation-shell .booking-page.is-confirmed .confirmation-success p { color: #6b7280; font-size: 15px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details { width: 100%; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details-heading { gap: 14px; margin-bottom: 24px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details-heading > span { background: #e6e8ec; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details-heading h3 { gap: 8px; color: #16244a; font-size: 17px; font-weight: 800; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details-heading h3 svg { width: 20px; height: 20px; stroke: #1f9d55; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details-card { min-height: 0; gap: 24px; padding: 28px; margin-bottom: 32px; border-color: #e6e8ec; border-radius: 14px; box-shadow: none; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail { padding: 0 12px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail + .appointment-detail { border-left-color: #e6e8ec; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail-icon { width: 56px; height: 56px; margin-bottom: 12px; color: #1f9d55; background: #eaf7ef; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail-icon svg { width: 26px; height: 26px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail dt { margin-bottom: 4px; color: #6b7280; font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail dd { color: #16244a; font-size: 16px; font-weight: 700; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail time { gap: 6px; margin-top: 6px; color: #17803d; font-size: 14px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail time svg { width: 15px; height: 15px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-status-link { width: auto; min-height: 0; gap: 8px; padding: 14px 28px; margin: 0 auto; color: #17803d; border-color: #1f9d55; border-radius: 10px; font-size: 15px; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-status-link:hover { background: #eaf7ef; }
+.appointment-confirmation-shell .booking-page.is-confirmed .appointment-status-link svg { width: 18px; height: 18px; }
+@media (max-width: 640px) { .appointment-confirmation-shell .booking-page.is-confirmed { width: min(calc(100% - 32px), 900px); padding: 28px 20px; margin: 24px auto; }.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details-card { grid-template-columns: 1fr; padding: 20px; }.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail { min-height: 0; padding: 22px 0; }.appointment-confirmation-shell .booking-page.is-confirmed .appointment-detail + .appointment-detail { border-top: 1px solid #e6e8ec; border-left: 0; }.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details-heading { gap: 10px; }.appointment-confirmation-shell .booking-page.is-confirmed .appointment-details-heading h3 { font-size: 15px; }.appointment-confirmation-shell .booking-page.is-confirmed .booking-heading h1 { font-size: 28px; } }
+
+/* Slot grid and selection (shared between booking page and doctor availability). */
+.slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; margin-top: 14px; }
+.slot-button {
+    min-height: 42px;
+    color: #1e40af;
+    background: var(--primary-soft);
+    border-color: #bfdbfe;
+}
+.slot-button:hover, .slot-button.is-selected { color: #fff; background: var(--primary); border-color: var(--primary); }
+
+.selected-slot {
+    margin: 0 0 16px;
+    padding: 11px 12px;
+    color: #1e4fa8;
+    background: var(--primary-soft);
+    border-left: 3px solid var(--primary);
+    border-radius: 6px;
+    font-weight: 700;
+}

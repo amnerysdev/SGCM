@@ -1,4 +1,5 @@
-import { getSession, register } from './api.js'
+import { register } from './api/account-api.js'
+import { getSession } from './shared/session.js'
 import { setFieldError, setFieldValid, setLoading, setupPasswordToggle, showAlert, validateEmail, validatePassword, validateRequired } from './auth-form.js'
 
 if (getSession()) window.location.replace('/dashboard.html')

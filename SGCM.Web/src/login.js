@@ -1,4 +1,5 @@
-import { login, saveSession, getSession } from './api.js'
+import { login } from './api/account-api.js'
+import { getSession, saveSession } from './shared/session.js'
 import { setFieldError, setLoading, setupPasswordToggle, showAlert, validateEmail, validateRequired } from './auth-form.js'
 
 if (getSession()) {

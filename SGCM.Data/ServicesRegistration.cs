@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SGCM.Data.Context;
 using SGCM.Data.Core;
-using SGCM.Data.Interfaces;
+using SGCM.Application.Abstractions;
 using SGCM.Data.Repositories;
 using SGCM.Domain.Settings;
 using System;
@@ -30,7 +31,9 @@ namespace SGCM.Data
                 service.AddDbContext<SgcmDbContext>(
                     (serviceProvider, opt) =>
                     {
-                        opt.EnableSensitiveDataLogging();
+                        var env = serviceProvider.GetRequiredService<IHostEnvironment>();
+                        if (env.IsDevelopment())
+                            opt.EnableSensitiveDataLogging();
                         opt.UseSqlServer(connectionString,
                         m => m.MigrationsAssembly(typeof(SgcmDbContext).Assembly.FullName));
                     },

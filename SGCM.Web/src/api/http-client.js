@@ -1,4 +1,4 @@
-import { getSession } from '../api.js'
+import { getSession } from '../shared/session.js'
 
 export async function requestJson(url, options = {}, unauthenticatedMessage = 'Debes iniciar sesión para continuar.') {
   const session = getSession()

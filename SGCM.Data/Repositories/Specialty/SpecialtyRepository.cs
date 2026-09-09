@@ -1,5 +1,5 @@
 using SGCM.Data.Context;
-using SGCM.Data.Interfaces;
+using SGCM.Application.Abstractions;
 
 namespace SGCM.Data.Repositories
 {

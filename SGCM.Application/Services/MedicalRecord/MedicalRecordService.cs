@@ -1,6 +1,6 @@
 using SGCM.Application.DTOs.MedicalRecord;
 using SGCM.Application.Interfaces;
-using SGCM.Data.Interfaces;
+using SGCM.Application.Abstractions;
 using SGCM.Domain.Core;
 using SGCM.Domain.Entities;
 

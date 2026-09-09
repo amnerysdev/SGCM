@@ -35,3 +35,23 @@ button:hover { background: var(--primary-dark); border-color: var(--primary-dark
 button:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.3); outline-offset: 2px; }
 button:active { transform: translateY(1px); }
 button:disabled { cursor: wait; opacity: .7; transform: none; }
+
+.button-secondary, .cancel-button {
+    color: #334155;
+    background: #fff;
+    border-color: #bfc9d8;
+}
+.button-secondary:hover { color: #1e40af; background: var(--primary-soft); border-color: #93c5fd; }
+.cancel-button { color: #b42318; border-color: #fecaca; }
+.cancel-button:hover { color: #991b1b; background: #fff1f2; border-color: #fca5a5; }
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    color: #1e4fa8;
+    background: var(--primary-soft);
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}

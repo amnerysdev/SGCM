@@ -1,93 +1,7 @@
-import { getSession } from "./api.js";
-import { requestJson } from "./api/http-client.js";
-
-const DOCTORS_URL = "/api/doctors";
-const SPECIALTIES_URL = "/api/specialties";
-
-const doctorApi = {
-    getAll: () =>
-        requestJson(DOCTORS_URL, {}, "Debes iniciar sesión para consultar el perfil."),
-
-    getById: id =>
-        requestJson(
-            `${DOCTORS_URL}/${encodeURIComponent(id)}`
-        ),
-
-    getBySpecialty: specialtyId =>
-        requestJson(
-            `${DOCTORS_URL}/by-specialty/${encodeURIComponent(specialtyId)}`
-        ),
-
-    getCurrent: () =>
-        requestJson(`${DOCTORS_URL}/me`, {}, "Debes iniciar sesión para consultar el perfil."),
-
-    create: dto =>
-        requestJson(DOCTORS_URL, {
-            method: "POST",
-            body: JSON.stringify(dto)
-        }),
-
-    update: (id, dto) =>
-        requestJson(
-            `${DOCTORS_URL}/${encodeURIComponent(id)}`,
-            {
-                method: "PUT",
-                body: JSON.stringify({
-                    ...dto,
-                    id
-                })
-            }
-        ),
-
-    remove: id =>
-        requestJson(
-            `${DOCTORS_URL}/${encodeURIComponent(id)}`,
-            {
-                method: "DELETE"
-            }
-        )
-};
-
-async function getSpecialty(id) {
-    return requestJson(
-        `${SPECIALTIES_URL}/${encodeURIComponent(id)}`,
-        {},
-        "Debes iniciar sesión para consultar el perfil."
-    );
-}
-
-function setText(elementId, value) {
-    const element = document.getElementById(elementId);
-
-    if (!element) {
-        return;
-    }
-
-    element.textContent = value || "No disponible";
-    element.classList.remove("loading");
-}
-
-function showMessage(message, type = "error") {
-    const element = document.getElementById(
-        "profile-message"
-    );
-
-    if (!element) {
-        return;
-    }
-
-    element.textContent = message;
-    element.className = `message visible ${type}`;
-}
-
-function calculateInitials(name) {
-    return name
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(part => part[0].toUpperCase())
-        .join("");
-}
+import { getSession } from "./shared/session.js";
+import { createDoctor, deleteDoctor, getAllDoctors, getCurrentDoctor, getDoctorById, getDoctorsBySpecialty, updateDoctor } from "./api/doctors-api.js";
+import { getSpecialty } from "./api/catalog-api.js";
+import { calculateInitials, setProfileText, setupProfileRetry, showProfileMessage } from "./components/profile-view.js";
 
 async function loadDoctorProfile() {
     const retryButton = document.getElementById(
@@ -107,7 +21,7 @@ async function loadDoctorProfile() {
             );
         }
 
-        const doctor = await doctorApi.getCurrent();
+        const doctor = await getCurrentDoctor();
 
         let specialtyName = "No asignada";
 
@@ -126,28 +40,28 @@ async function loadDoctorProfile() {
         const email =
             session.email || "No disponible";
 
-        setText("doctor-name", fullName);
-        setText("doctor-email", email);
-        setText(
+        setProfileText("doctor-name", fullName);
+        setProfileText("doctor-email", email);
+        setProfileText(
             "doctor-license",
             doctor.medicalLicense
         );
-        setText(
+        setProfileText(
             "doctor-specialty",
             specialtyName
         );
-        setText("doctor-id", doctor.id);
-        setText(
+        setProfileText("doctor-id", doctor.id);
+        setProfileText(
             "doctor-initials",
             calculateInitials(fullName) || "DR"
         );
 
-        showMessage(
+        showProfileMessage(
             "Perfil cargado correctamente.",
             "success"
         );
     } catch (error) {
-        showMessage(
+        showProfileMessage(
             error.message ||
             "No se pudo cargar el perfil del doctor."
         );
@@ -158,7 +72,15 @@ async function loadDoctorProfile() {
     }
 }
 
-window.sgcmDoctors = doctorApi;
+window.sgcmDoctors = {
+    getAll: getAllDoctors,
+    getById: getDoctorById,
+    getBySpecialty: getDoctorsBySpecialty,
+    getCurrent: getCurrentDoctor,
+    create: createDoctor,
+    update: updateDoctor,
+    remove: deleteDoctor
+};
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -170,12 +92,7 @@ document.addEventListener(
             return;
         }
 
-        document
-            .getElementById("retry-profile")
-            ?.addEventListener(
-                "click",
-                loadDoctorProfile
-            );
+        setupProfileRetry(loadDoctorProfile);
 
         loadDoctorProfile();
     }

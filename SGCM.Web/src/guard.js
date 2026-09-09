@@ -1,4 +1,4 @@
-import { getSession } from './api.js'
+import { getSession } from './shared/session.js'
 
 export function requireSession() {
   const session = getSession()

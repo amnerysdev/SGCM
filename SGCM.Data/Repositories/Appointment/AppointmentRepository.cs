@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SGCM.Data.Context;
-using SGCM.Data.Interfaces;
+using SGCM.Application.Abstractions;
 using SGCM.Domain.Core;
 using SGCM.Domain.Enums;
 

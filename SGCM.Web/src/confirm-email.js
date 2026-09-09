@@ -1,4 +1,4 @@
-import { confirmEmail } from './api.js'
+import { confirmEmail } from './api/account-api.js'
 
 const feedbackEl = document.getElementById('feedback')
 

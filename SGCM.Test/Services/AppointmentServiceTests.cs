@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Moq;
 using SGCM.Application.DTOs.Appointment;
 using SGCM.Application.Services;
-using SGCM.Data.Interfaces;
+using SGCM.Application.Abstractions;
 using SGCM.Domain.Core;
 using SGCM.Domain.Entities;
 using SGCM.Domain.Enums;
