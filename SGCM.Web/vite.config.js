@@ -9,6 +9,7 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:5236',
     },
+    open: true,
   },
 
   build: {

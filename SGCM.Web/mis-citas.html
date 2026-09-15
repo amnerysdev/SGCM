@@ -7,35 +7,47 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <main class="container">
-      <section class="card card--wide">
-        <header>
+    <section class="booking-page" aria-labelledby="mis-citas-title">
+      <header class="booking-heading">
+        <div>
           <p class="eyebrow">Seguimiento</p>
-          <h1>Mis citas</h1>
-          <p class="lead">Consulta tus próximas citas y cancela únicamente las que ya no puedas atender.</p>
-        </header>
-        <p id="error" class="error" role="alert" aria-live="assertive" hidden></p>
-        <p id="message" class="success" role="status" aria-live="polite" hidden></p>
-        <form id="appointments-form" class="form-section">
-          <div class="field">
-            <label for="patient-id">ID del paciente</label>
-            <input id="patient-id" placeholder="Ej.: patient-demo-001" required />
-            <p class="helper-text">Ingresa el identificador del perfil del paciente.</p>
-          </div>
-          <button type="submit">Ver mis citas</button>
-        </form>
-        <section class="results-section" aria-labelledby="appointments-title">
-          <div class="section-heading">
+          <h1 id="mis-citas-title">Mis citas</h1>
+          <p>Consulta tus próximas citas y cancela únicamente las que ya no puedas atender.</p>
+        </div>
+      </header>
+      <p id="error" class="error" role="alert" aria-live="assertive" hidden></p>
+      <p id="message" class="success" role="status" aria-live="polite" hidden></p>
+
+      <form id="appointments-form" class="form-section patient-search" novalidate>
+        <div class="patient-search-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        </div>
+        <label for="patient-id">ID del paciente</label>
+        <input id="patient-id" placeholder="Ingresa el identificador del perfil del paciente…" required />
+        <button type="submit" class="patient-search-submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Ver mis citas
+        </button>
+        <p class="helper-text">Ingresa el identificador del perfil del paciente.</p>
+      </form>
+
+      <section class="results-section appointments-results" aria-labelledby="appointments-title">
+        <div class="section-heading results-heading-row">
+          <div>
             <p class="eyebrow">Resultados</p>
             <h2 id="appointments-title">Citas programadas</h2>
             <p class="section-description">Las citas canceladas se mantienen visibles como historial.</p>
           </div>
-          <div id="appointments-list" class="appointments-list" aria-live="polite">
-            <p class="empty-state">Consulta tu ID para ver tus citas.</p>
-          </div>
-        </section>
+          <span id="appointments-count" class="results-count-badge" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            <span id="appointments-count-text">0 citas encontradas</span>
+          </span>
+        </div>
+        <div id="appointments-list" class="appointments-list" aria-live="polite">
+          <p class="empty-state">Consulta tu ID para ver tus citas.</p>
+        </div>
       </section>
-    </main>
+    </section>
     <script type="module" src="/src/app-shell.js"></script>
     <script type="module" src="/src/features/appointments/patient-appointments-page.js"></script>
   </body>
